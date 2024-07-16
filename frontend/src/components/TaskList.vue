@@ -25,15 +25,6 @@
     </div>
     <div class="mb-6 flex flex-wrap justify-between items-center">
       <div class="mb-2 sm:mb-0">
-        <label class="mr-2 font-semibold">Sort by:</label>
-        <select v-model="sortBy" class="border p-2 rounded">
-          <option value="title">Title</option>
-          <option value="priority">Priority</option>
-          <option value="deadline">Deadline</option>
-          <option value="creationDate">Creation Date</option>
-        </select>
-      </div>
-      <div class="mb-2 sm:mb-0">
         <label class="mr-2 font-semibold">Filter:</label>
         <select v-model="filterBy" class="border p-2 rounded">
           <option value="all">All</option>
@@ -58,9 +49,18 @@
       </div>
     </div>
     <div class="grid grid-cols-5 gap-4 font-bold mb-2">
-      <div class="text-left">Title</div>
-      <div class="text-center">Priority</div>
-      <div class="text-center">Deadline</div>
+      <div class="text-left cursor-pointer" @click="toggleSort('title')">
+        Title
+        <span class="ml-1">{{ getSortIcon('title') }}</span>
+      </div>
+      <div class="text-center cursor-pointer" @click="toggleSort('priority')">
+        Priority
+        <span class="ml-1">{{ getSortIcon('priority') }}</span>
+      </div>
+      <div class="text-center cursor-pointer" @click="toggleSort('deadline')">
+        Deadline
+        <span class="ml-1">{{ getSortIcon('deadline') }}</span>
+      </div>
       <div class="text-center">Tags</div>
       <div class="text-right">Actions</div>
     </div>
@@ -139,6 +139,7 @@ export default {
       hideCompleted: false,
       bgColor: localStorage.getItem('bgColor') || '#f3f4f6',
       tagFilters: [],
+      sortDirection: 'asc',
     };
   },
   computed: {
@@ -158,15 +159,17 @@ export default {
         );
       }
       return filteredTasks.sort((a, b) => {
+        let comparison = 0;
         if (this.sortBy === 'title') {
-          return a.title.localeCompare(b.title);
+          comparison = a.title.localeCompare(b.title);
         } else if (this.sortBy === 'priority') {
-          return b.priority - a.priority;
+          comparison = b.priority - a.priority;
         } else if (this.sortBy === 'deadline') {
-          return new Date(a.deadline) - new Date(b.deadline);
+          comparison = new Date(a.deadline) - new Date(b.deadline);
         } else {
-          return new Date(b.creationDate) - new Date(a.creationDate);
+          comparison = new Date(b.creationDate) - new Date(a.creationDate);
         }
+        return this.sortDirection === 'asc' ? comparison : -comparison;
       });
     },
     uniqueTags() {
@@ -358,6 +361,18 @@ export default {
       } else {
         this.tagFilters.splice(index, 1);
       }
+    },
+    toggleSort(field) {
+      if (this.sortBy === field) {
+        this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+      } else {
+        this.sortBy = field;
+        this.sortDirection = 'asc';
+      }
+    },
+    getSortIcon(field) {
+      if (this.sortBy !== field) return '↕️';
+      return this.sortDirection === 'asc' ? '↑' : '↓';
     },
   },
 };
