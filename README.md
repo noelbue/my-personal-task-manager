@@ -63,6 +63,29 @@ Make sure to have Node.js and npm installed on your system before starting the s
 ## API Endpoints
 The server provides the following RESTful API endpoints:
 1. GET /api/tasks
+    - Retrieves all tasks
+    - Response: JSON array of task objects
 2. POST /api/tasks
+    - Creates a new task
+    - Request body: JSON object with task details (title, completed, priority, deadline, tags)
+    - Response: JSON object with the new task's ID
 3. PUT /api/tasks/:id
+    - Updates an existing task
+    - URL parameter: task ID
+    - Request body: JSON object with updated task details
+    - Response: JSON object confirming the number of changes
 4. DELETE /api/tasks/:id
+    - Deletes a task
+    - URL parameter: task ID
+    - Response: JSON object confirming the number of changes
+
+Each task object includes:
+- id: Unique identifier (auto-generated)
+- title: Task description (required)
+- completed: Boolean indicating completion status
+- priority: Integer representing task priority
+- deadline: Date string for the task due date
+- creationDate: Date string when the task was created
+- tags: Array of strings for categorizing tasks
+
+The server uses SQLite for data storage, with the database created in memory for this implementation.

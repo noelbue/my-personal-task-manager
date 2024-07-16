@@ -1,10 +1,24 @@
 const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
 const PORT = process.env.PORT || 3000;
+
+/**
+ * @constant {express.Application}
+ */
 const app = express();
+
+/** Middleware to parse JSON bodies */
 app.use(express.json());
+
+/**
+ * SQLite database connection
+ * @type {sqlite3.Database}
+ */
 const db = new sqlite3.Database(':memory:');
 
+/**
+ * Initialize the database by creating the tasks table
+ */
 db.serialize(() => {
   db.run(`CREATE TABLE tasks (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -17,7 +31,12 @@ db.serialize(() => {
   )`);
 });
 
-// GET /api/tasks
+/**
+ * GET /api/tasks
+ * Retrieve all tasks
+ * @param {express.Request} req - Express request object
+ * @param {express.Response} res - Express response object
+ */
 app.get('/api/tasks', (req, res) => {
   db.all('SELECT * FROM tasks', (err, rows) => {
     if (err) {
@@ -36,7 +55,12 @@ app.get('/api/tasks', (req, res) => {
   });
 });
 
-// POST /api/tasks
+/**
+ * POST /api/tasks
+ * Create a new task
+ * @param {express.Request} req - Express request object
+ * @param {express.Response} res - Express response object
+ */
 app.post('/api/tasks', (req, res) => {
   const { title, completed, priority, deadline, creationDate, tags } = req.body;
   db.run(
@@ -53,7 +77,12 @@ app.post('/api/tasks', (req, res) => {
   );
 });
 
-// PUT /api/tasks/:id
+/**
+ * PUT /api/tasks/:id
+ * Update an existing task
+ * @param {express.Request} req - Express request object
+ * @param {express.Response} res - Express response object
+ */
 app.put('/api/tasks/:id', (req, res) => {
   const { id } = req.params;
   const { title, completed, priority, deadline, tags } = req.body;
@@ -78,7 +107,12 @@ app.put('/api/tasks/:id', (req, res) => {
   );
 });
 
-// DELETE /api/tasks/:id
+/**
+ * DELETE /api/tasks/:id
+ * Delete a task
+ * @param {express.Request} req - Express request object
+ * @param {express.Response} res - Express response object
+ */
 app.delete('/api/tasks/:id', (req, res) => {
   const { id } = req.params;
   db.run('DELETE FROM tasks WHERE id = ?', id, function (err) {
@@ -95,6 +129,9 @@ app.delete('/api/tasks/:id', (req, res) => {
   });
 });
 
+/**
+ * Start the Express server
+ */
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
