@@ -59,3 +59,10 @@ npx tailwindcss init -p
 - Tailwind CSS
 
 Make sure to have Node.js and npm installed on your system before starting the setup process.
+
+## API Endpoints
+The server provides the following RESTful API endpoints:
+1. GET /api/tasks
+2. POST /api/tasks
+3. PUT /api/tasks/:id
+4. DELETE /api/tasks/:id

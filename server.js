@@ -18,9 +18,83 @@ db.serialize(() => {
 });
 
 // GET /api/tasks
+app.get('/api/tasks', (req, res) => {
+  db.all('SELECT * FROM tasks', (err, rows) => {
+    if (err) {
+      res.status(500).json({ error: 'Internal server error' });
+      console.error(err);
+      return;
+    }
+    rows.forEach(row => {
+      try {
+        row.tags = JSON.parse(row.tags);
+      } catch (e) {
+        row.tags = [];
+      }
+    });
+    res.json({ tasks: rows });
+  });
+});
 
 // POST /api/tasks
+app.post('/api/tasks', (req, res) => {
+  const { title, completed, priority, deadline, creationDate, tags } = req.body;
+  db.run(
+    'INSERT INTO tasks (title, completed, priority, deadline, creationDate, tags) VALUES (?, ?, ?, ?, ?, ?)',
+    [title, completed ? 1 : 0, priority || 0, deadline, creationDate || new Date().toISOString(), JSON.stringify(tags || [])],
+    function (err) {
+      if (err) {
+        res.status(500).json({ error: 'Internal server error' });
+        console.error(err);
+        return;
+      }
+      res.status(201).json({ id: this.lastID });
+    }
+  );
+});
 
 // PUT /api/tasks/:id
+app.put('/api/tasks/:id', (req, res) => {
+  const { id } = req.params;
+  const { title, completed, priority, deadline, tags } = req.body;
+  if (!title || typeof title !== 'string') {
+    return res.status(400).json({ error: 'Invalid title' });
+  }
+  db.run(
+    'UPDATE tasks SET title = ?, completed = ?, priority = ?, deadline = ?, tags = ? WHERE id = ?',
+    [title, completed ? 1 : 0, priority || 0, deadline, JSON.stringify(tags || []), id],
+    function (err) {
+      if (err) {
+        res.status(500).json({ error: 'Internal server error' });
+        console.error(err);
+        return;
+      }
+      if (this.changes === 0) {
+        res.status(404).json({ error: 'Task not found' });
+      } else {
+        res.json({ changes: this.changes });
+      }
+    }
+  );
+});
 
 // DELETE /api/tasks/:id
+app.delete('/api/tasks/:id', (req, res) => {
+  const { id } = req.params;
+  db.run('DELETE FROM tasks WHERE id = ?', id, function (err) {
+    if (err) {
+      res.status(500).json({ error: 'Internal server error' });
+      console.error(err);
+      return;
+    }
+    if (this.changes === 0) {
+      res.status(404).json({ error: 'Task not found' });
+    } else {
+      res.json({ changes: this.changes });
+    }
+  });
+});
+
+app.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
+});
