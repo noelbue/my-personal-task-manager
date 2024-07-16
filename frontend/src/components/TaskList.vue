@@ -1,6 +1,6 @@
 <template>
   <div class="container mx-auto p-4">
-    <h1 class="text-3xl font-bold mb-6 text-center">Personal Task Manager</h1>
+    <h1 class="text-3xl font-bold mb-6">Personal Task Manager</h1>
     <div class="mb-8 p-6 bg-gray-100 rounded-lg shadow-md">
       <h2 class="text-2xl font-bold mb-4">Add New Task</h2>
       <input v-model="newTaskTitle" placeholder="Task title" class="border p-2 w-full mb-3 rounded" />
@@ -46,13 +46,24 @@
         <label for="hideCompleted" class="font-semibold">Hide completed tasks</label>
       </div>
     </div>
+    <div class="mb-4">
+      <label class="mr-2 font-semibold">Filter by tags:</label>
+      <div class="flex flex-wrap">
+        <span v-for="tag in uniqueTags" :key="tag" 
+              @click="toggleTagFilter(tag)"
+              :class="{'bg-blue-500 text-white': tagFilters.includes(tag), 'bg-gray-200': !tagFilters.includes(tag)}"
+              class="px-2 py-1 rounded-full text-sm mr-2 mb-2 cursor-pointer">
+          {{ tag }}
+        </span>
+      </div>
+    </div>
     <transition-group name="list" tag="ul" class="bg-white shadow-lg rounded-lg divide-y divide-gray-200">
       <li v-for="task in filteredAndSortedTasks" :key="task.id" class="p-4 hover:bg-gray-50 transition duration-150 ease-in-out">
         <div class="flex items-center justify-between">
           <div class="flex items-center flex-grow mr-4">
             <input type="checkbox" :checked="task.completed" @change="toggleTaskCompletion(task)"
               class="mr-3 form-checkbox h-5 w-5 text-blue-600 transition duration-150 ease-in-out" />
-            <span v-if="!task.isEditing" :class="{ 'line-through text-gray-500': task.completed }" class="flex-grow">
+            <span v-if="!task.isEditing" :class="{ 'line-through text-gray-500': task.completed }" class="flex-grow text-left">
               {{ task.title }} {{ getPriorityEmoji(task.priority) }}
               <span class="text-sm text-gray-500 ml-2">Due: {{ formatDate(task.deadline) }}</span>
             </span>
@@ -70,6 +81,7 @@
             <button v-if="!task.isEditing" @click="editTask(task)" class="text-blue-500 hover:text-blue-700 mr-2 transition duration-150 ease-in-out">Edit</button>
             <button v-if="task.isEditing" @click="saveTaskEdit(task)" class="text-green-500 hover:text-green-700 mr-2 transition duration-150 ease-in-out">Save</button>
             <button v-if="task.isEditing" @click="cancelTaskEdit(task)" class="text-red-500 hover:text-red-700 mr-2 transition duration-150 ease-in-out">Cancel</button>
+            <button @click="duplicateTask(task)" class="text-purple-500 hover:text-purple-700 mr-2 transition duration-150 ease-in-out">Duplicate</button>
             <button @click="deleteTask(task.id)" class="text-red-500 hover:text-red-700 transition duration-150 ease-in-out">Delete</button>
           </div>
         </div>
@@ -81,6 +93,11 @@
     <div v-if="!filteredAndSortedTasks.length" class="text-center text-gray-500 mt-4">
       No tasks available
     </div>
+  </div>
+  <div class="fixed bottom-4 left-4 flex items-center bg-white p-2 rounded-lg shadow-md">
+    <label for="bgColor" class="mr-2 text-sm font-medium text-gray-700">Change background color:</label>
+    <input type="color" id="bgColor" v-model="bgColor"
+      class="w-8 h-8 p-0 border-none cursor-pointer" />
   </div>
 </template>
 
@@ -97,6 +114,8 @@ export default {
       sortBy: 'creationDate',
       filterBy: 'all',
       hideCompleted: false,
+      bgColor: localStorage.getItem('bgColor') || '#f3f4f6',
+      tagFilters: [],
     };
   },
   computed: {
@@ -109,6 +128,11 @@ export default {
       }
       if (this.hideCompleted) {
         filteredTasks = filteredTasks.filter(task => !task.completed);
+      }    
+      if (this.tagFilters.length > 0) {
+        filteredTasks = filteredTasks.filter(task => 
+          this.tagFilters.every(tag => task.tags.includes(tag))
+        );
       }
       return filteredTasks.sort((a, b) => {
         if (this.sortBy === 'title') {
@@ -121,10 +145,21 @@ export default {
           return new Date(b.creationDate) - new Date(a.creationDate);
         }
       });
+    },
+    uniqueTags() {
+      const allTags = this.tasks.flatMap(task => task.tags);
+      return [...new Set(allTags)];
     }
   },
   mounted() {
     this.fetchTasks();
+    document.body.style.backgroundColor = this.bgColor;
+  },
+  watch: {
+    bgColor(newColor) {
+      document.body.style.backgroundColor = newColor;
+      localStorage.setItem('bgColor', newColor);
+    },
   },
   methods: {
     async fetchTasks() {
@@ -141,7 +176,7 @@ export default {
         }));
       } catch (error) {
         console.error('Error fetching tasks:', error);
-        // You could add user-facing error handling here
+        alert('Failed to fetch tasks. Please try again.');
       }
     },
     addTag() {
@@ -249,6 +284,36 @@ export default {
       if (!dateString) return 'No deadline';
       const date = new Date(dateString);
       return date.toLocaleDateString();
+    },
+    async duplicateTask(task) {
+      const duplicatedTask = {
+        title: `${task.title} (Copy)`,
+        completed: false,
+        priority: task.priority,
+        deadline: task.deadline,
+        tags: [...task.tags],
+        creationDate: new Date().toISOString()
+      };
+      try {
+        const response = await fetch('/api/tasks', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(duplicatedTask),
+        });
+        const data = await response.json();
+        this.tasks.push({ ...duplicatedTask, id: data.id, isEditing: false, editTitle: duplicatedTask.title, editPriority: duplicatedTask.priority, editDeadline: duplicatedTask.deadline });
+      } catch (error) {
+        console.error('Error duplicating task:', error);
+        alert('Failed to duplicate task. Please try again.');
+      }
+    },
+    toggleTagFilter(tag) {
+      const index = this.tagFilters.indexOf(tag);
+      if (index === -1) {
+        this.tagFilters.push(tag);
+      } else {
+        this.tagFilters.splice(index, 1);
+      }
     },
   },
 };
