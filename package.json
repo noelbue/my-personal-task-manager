@@ -1,0 +1,19 @@
+{
+  "name": "buergler-noel_4233474_pjwd_p2_s",
+  "version": "1.0.0",
+  "description": "The \"Personal Task Manager\" is a web application developed to manage daily tasks. It provides a straightforward interface to track tasks efficiently.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.19.2",
+    "sqlite3": "^5.1.7"
+  }
+}
