@@ -73,6 +73,10 @@ npx tailwindcss init -p
 #### Frontend:
 - Vue.js
 - Tailwind CSS
+- vue-toast-notification
+- @fortawesome/vue-fontawesome
+- @fortawesome/fontawesome-svg-core
+- @fortawesome/free-solid-svg-icons
 
 Make sure to have Node.js and npm installed on your system before starting the setup process.
 

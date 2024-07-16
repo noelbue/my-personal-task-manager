@@ -57,36 +57,59 @@
         </span>
       </div>
     </div>
+    <div class="grid grid-cols-5 gap-4 font-bold mb-2">
+      <div class="text-left">Title</div>
+      <div class="text-center">Priority</div>
+      <div class="text-center">Deadline</div>
+      <div class="text-center">Tags</div>
+      <div class="text-right">Actions</div>
+    </div>
     <transition-group name="list" tag="ul" class="bg-white shadow-lg rounded-lg divide-y divide-gray-200">
       <li v-for="task in filteredAndSortedTasks" :key="task.id" class="p-4 hover:bg-gray-50 transition duration-150 ease-in-out">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center flex-grow mr-4">
+        <div class="grid grid-cols-5 gap-4 items-center">
+          <div class="flex items-center">
             <input type="checkbox" :checked="task.completed" @change="toggleTaskCompletion(task)"
               class="mr-3 form-checkbox h-5 w-5 text-blue-600 transition duration-150 ease-in-out" />
             <span v-if="!task.isEditing" :class="{ 'line-through text-gray-500': task.completed }" class="flex-grow text-left">
-              {{ task.title }} {{ getPriorityEmoji(task.priority) }}
-              <span class="text-sm text-gray-500 ml-2">Due: {{ formatDate(task.deadline) }}</span>
+              {{ task.title }}
             </span>
-            <div v-else class="flex items-center flex-grow">
-              <input v-model="task.editTitle" class="border p-1 mr-2 flex-grow rounded" />
-              <select v-model="task.editPriority" class="border p-1 mr-2 rounded">
-                <option value="1">Low ⚪</option>
-                <option value="2">Medium 🟡</option>
-                <option value="3">High 🔴</option>
-              </select>
-              <input type="date" v-model="task.editDeadline" class="border p-1 mr-2 rounded" />
-            </div>
+            <input v-else v-model="task.editTitle" class="border p-1 mr-2 flex-grow rounded" />
           </div>
           <div>
-            <button v-if="!task.isEditing" @click="editTask(task)" class="text-blue-500 hover:text-blue-700 mr-2 transition duration-150 ease-in-out">Edit</button>
-            <button v-if="task.isEditing" @click="saveTaskEdit(task)" class="text-green-500 hover:text-green-700 mr-2 transition duration-150 ease-in-out">Save</button>
-            <button v-if="task.isEditing" @click="cancelTaskEdit(task)" class="text-red-500 hover:text-red-700 mr-2 transition duration-150 ease-in-out">Cancel</button>
-            <button @click="duplicateTask(task)" class="text-purple-500 hover:text-purple-700 mr-2 transition duration-150 ease-in-out">Duplicate</button>
-            <button @click="deleteTask(task.id)" class="text-red-500 hover:text-red-700 transition duration-150 ease-in-out">Delete</button>
+            <span v-if="!task.isEditing">{{ getPriorityEmoji(task.priority) }}</span>
+            <select v-else v-model="task.editPriority" class="border p-1 rounded">
+              <option value="1">Low ⚪</option>
+              <option value="2">Medium 🟡</option>
+              <option value="3">High 🔴</option>
+            </select>
           </div>
-        </div>
-        <div class="mt-2 flex flex-wrap">
-          <span v-for="tag in task.tags" :key="tag" class="bg-gray-200 px-2 py-1 rounded-full text-sm mr-2 mb-2">{{ tag }}</span>
+          <div>
+            <span v-if="!task.isEditing">{{ formatDate(task.deadline) }}</span>
+            <input v-else type="date" v-model="task.editDeadline" class="border p-1 rounded" />
+          </div>
+          <div class="flex flex-wrap">
+            <span v-for="tag in task.tags" :key="tag" class="bg-gray-200 px-2 py-1 rounded-full text-sm mr-2 mb-2">{{ tag }}</span>
+          </div>
+          <div class="flex items-center justify-end">
+            <button v-if="!task.isEditing" @click="editTask(task)" 
+                    :disabled="task.completed"
+                    :class="{'opacity-50 cursor-not-allowed': task.completed}"
+                    class="text-gray-500 hover:text-blue-700 mr-2 transition duration-150 ease-in-out">
+              <font-awesome-icon :icon="['fas', 'pen']" />
+            </button>
+            <button v-if="task.isEditing" @click="saveTaskEdit(task)" class="text-green-500 hover:text-green-700 mr-2 transition duration-150 ease-in-out">
+              <font-awesome-icon :icon="['fas', 'check']" />
+            </button>
+            <button v-if="task.isEditing" @click="cancelTaskEdit(task)" class="text-red-500 hover:text-red-700 mr-2 transition duration-150 ease-in-out">
+              <font-awesome-icon :icon="['fas', 'times']" />
+            </button>
+            <button v-if="!task.isEditing" @click="duplicateTask(task)" class="text-gray-500 hover:text-blue-700 mr-2 transition duration-150 ease-in-out">
+              <font-awesome-icon :icon="['fas', 'clone']" />
+            </button>
+            <button v-if="!task.isEditing" @click="deleteTask(task.id)" class="text-gray-500 hover:text-red-700 transition duration-150 ease-in-out">
+              <font-awesome-icon :icon="['fas', 'trash']" />
+            </button>
+          </div>
         </div>
       </li>
     </transition-group>
@@ -176,7 +199,10 @@ export default {
         }));
       } catch (error) {
         console.error('Error fetching tasks:', error);
-        alert('Failed to fetch tasks. Please try again.');
+        this.$toast.error('Failed to fetch tasks. Please try again.', {
+          position: 'top-right',
+          duration: 3000
+        });
       }
     },
     addTag() {
@@ -190,7 +216,10 @@ export default {
     },
     async addTask() {
       if (!this.newTaskTitle || !this.newTaskPriority || !this.newTaskDeadline) {
-        alert('Please fill in all required fields');
+        this.$toast.error('Please fill in all required fields.', {
+          position: 'top-right',
+          duration: 3000
+        });
         return;
       }
       const newTask = {
@@ -215,7 +244,10 @@ export default {
         this.newTaskTags = [];
       } catch (error) {
         console.error('Error adding task:', error);
-        alert('Failed to add task. Please try again.');
+        this.$toast.error('Failed to add task. Please try again.', {
+          position: 'top-right',
+          duration: 3000
+        });
       }
     },
     async toggleTaskCompletion(task) {
@@ -229,7 +261,10 @@ export default {
         task.completed = !task.completed;
       } catch (error) {
         console.error('Error updating task completion:', error);
-        alert('Failed to update task. Please try again.');
+        this.$toast.error('Failed to update task. Please try again.', {
+          position: 'top-right',
+          duration: 3000
+        });
       }
     },
     editTask(task) {
@@ -255,7 +290,10 @@ export default {
         Object.assign(task, updatedTask);
       } catch (error) {
         console.error('Error saving task edit:', error);
-        alert('Failed to save task changes. Please try again.');
+        this.$toast.error('Failed to save task changes. Please try again.', {
+          position: 'top-right',
+          duration: 3000
+        });
       }
     },
     cancelTaskEdit(task) {
@@ -268,7 +306,10 @@ export default {
           this.tasks = this.tasks.filter(task => task.id !== taskId);
         } catch (error) {
           console.error('Error deleting task:', error);
-          alert('Failed to delete task. Please try again.');
+          this.$toast.error('Failed to delete task. Please try again.', {
+            position: 'top-right',
+            duration: 3000
+          });
         }
       }
     },
@@ -304,7 +345,10 @@ export default {
         this.tasks.push({ ...duplicatedTask, id: data.id, isEditing: false, editTitle: duplicatedTask.title, editPriority: duplicatedTask.priority, editDeadline: duplicatedTask.deadline });
       } catch (error) {
         console.error('Error duplicating task:', error);
-        alert('Failed to duplicate task. Please try again.');
+        this.$toast.error('Failed to duplicate task. Please try again.', {
+            position: 'top-right',
+            duration: 3000
+        });
       }
     },
     toggleTagFilter(tag) {
