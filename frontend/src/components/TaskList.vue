@@ -8,15 +8,31 @@
         <option value="2">Medium</option>
         <option value="3">High</option>
       </select>
+      <input v-model="newTaskTag" placeholder="Add tag" class="border p-2 mr-2" />
       <button @click="addTask" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700">Add Task</button>
     </div>
-    <ul v-if="tasks.length" class="bg-white shadow rounded-lg divide-y divide-gray-200">
-      <li v-for="task in tasks" :key="task.id" class="flex items-center justify-between p-4">
+    <div class="mb-4">
+      <label class="mr-2">Sort by:</label>
+      <select v-model="sortBy" class="border p-2 mr-2">
+        <option value="title">Title</option>
+        <option value="priority">Priority</option>
+        <option value="creationDate">Creation Date</option>
+      </select>
+      <label class="mr-2">Filter:</label>
+      <select v-model="filterBy" class="border p-2 mr-2">
+        <option value="all">All</option>
+        <option value="completed">Completed</option>
+        <option value="active">Active</option>
+      </select>
+    </div>
+    <ul v-if="filteredAndSortedTasks.length" class="bg-white shadow rounded-lg divide-y divide-gray-200">
+      <li v-for="task in filteredAndSortedTasks" :key="task.id" class="flex items-center justify-between p-4">
         <div class="flex items-center">
           <input type="checkbox" :checked="task.completed" @change="toggleTaskCompletion(task)"
             class="mr-2 form-checkbox h-5 w-5 text-blue-600" />
           <span v-if="!task.isEditing" :class="{ 'line-through': task.completed }">
             {{ task.title }} - Priority: {{ getPriorityText(task.priority) }}
+            <span v-for="tag in task.tags" :key="tag" class="ml-2 bg-gray-200 px-2 py-1 rounded-full text-sm">{{ tag }}</span>
           </span>
           <input v-else v-model="task.editTitle" class="border p-1 mr-2" />
           <select v-if="task.isEditing" v-model="task.editPriority" class="border p-1 mr-2">
@@ -24,6 +40,7 @@
             <option value="2">Medium</option>
             <option value="3">High</option>
           </select>
+          <input v-if="task.isEditing" v-model="task.editTag" placeholder="Add tag" class="border p-1 mr-2" />
         </div>
         <div>
           <button v-if="!task.isEditing" @click="editTask(task)" class="text-blue-500 hover:text-blue-700 mr-2">Edit</button>
@@ -46,7 +63,29 @@ export default {
       tasks: [],
       newTaskTitle: '',
       newTaskPriority: '1',
+      newTaskTag: '',
+      sortBy: 'creationDate',
+      filterBy: 'all',
     };
+  },
+  computed: {
+    filteredAndSortedTasks() {
+      let filteredTasks = this.tasks;
+      if (this.filterBy === 'completed') {
+        filteredTasks = filteredTasks.filter(task => task.completed);
+      } else if (this.filterBy === 'active') {
+        filteredTasks = filteredTasks.filter(task => !task.completed);
+      }
+      return filteredTasks.sort((a, b) => {
+        if (this.sortBy === 'title') {
+          return a.title.localeCompare(b.title);
+        } else if (this.sortBy === 'priority') {
+          return b.priority - a.priority;
+        } else {
+          return new Date(b.creationDate) - new Date(a.creationDate);
+        }
+      });
+    }
   },
   mounted() {
     this.fetchTasks();
@@ -55,7 +94,14 @@ export default {
     async fetchTasks() {
       const response = await fetch('/api/tasks');
       const data = await response.json();
-      this.tasks = data.tasks.map(task => ({ ...task, isEditing: false, editTitle: task.title, editPriority: task.priority }));
+      this.tasks = data.tasks.map(task => ({ 
+        ...task, 
+        isEditing: false, 
+        editTitle: task.title, 
+        editPriority: task.priority,
+        editTag: '',
+        tags: task.tags || []
+      }));
     },
     async addTask() {
       if (!this.newTaskTitle) return;
@@ -63,6 +109,8 @@ export default {
         title: this.newTaskTitle,
         completed: false,
         priority: parseInt(this.newTaskPriority),
+        tags: this.newTaskTag ? [this.newTaskTag] : [],
+        creationDate: new Date().toISOString()
       };
       const response = await fetch('/api/tasks', {
         method: 'POST',
@@ -70,9 +118,10 @@ export default {
         body: JSON.stringify(newTask),
       });
       const data = await response.json();
-      this.tasks.push({ ...newTask, id: data.id, isEditing: false, editTitle: newTask.title, editPriority: newTask.priority });
+      this.tasks.push({ ...newTask, id: data.id, isEditing: false, editTitle: newTask.title, editPriority: newTask.priority, editTag: '' });
       this.newTaskTitle = '';
       this.newTaskPriority = '1';
+      this.newTaskTag = '';
     },
     async toggleTaskCompletion(task) {
       const updatedTask = { ...task, completed: !task.completed };
@@ -87,9 +136,16 @@ export default {
       task.isEditing = true;
       task.editTitle = task.title;
       task.editPriority = task.priority;
+      task.editTag = '';
     },
     async saveTaskEdit(task) {
-      const updatedTask = { ...task, title: task.editTitle, priority: parseInt(task.editPriority), isEditing: false };
+      const updatedTask = { 
+        ...task, 
+        title: task.editTitle, 
+        priority: parseInt(task.editPriority), 
+        isEditing: false,
+        tags: task.editTag ? [...task.tags, task.editTag] : task.tags
+      };
       await fetch(`/api/tasks/${task.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },

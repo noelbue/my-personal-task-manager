@@ -1,6 +1,22 @@
 # Personal Task Manager Introduction
 The "Personal Task Manager" is a web application developed to manage daily tasks. It provides a straightforward interface to track tasks efficiently.
 
+## Features
+- Create, edit, and delete tasks
+- Mark tasks as complete or incomplete
+- Set task priorities (Low, Medium, High)
+- Add tags to tasks for better organization
+- Sort tasks by title, priority, or creation date
+- Filter tasks by completion status (All, Completed, Active)
+
+## Usage
+1. Add a new task by entering a title, selecting a priority, and optionally adding a tag.
+2. Edit a task by clicking the "Edit" button, modifying the details, and clicking "Save".
+3. Delete a task by clicking the "Delete" button.
+4. Mark a task as complete or incomplete by clicking the checkbox next to it.
+5. Sort tasks using the "Sort by" dropdown menu.
+6. Filter tasks using the "Filter" dropdown menu.
+
 ## Target User Group
 The application is designed for individuals like students, freelancers, and professionals who need a simple tool to organize their daily tasks.
 
