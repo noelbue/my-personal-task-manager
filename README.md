@@ -9,6 +9,9 @@ The "Personal Task Manager" is a web application developed to manage daily tasks
 - Sort tasks by title, priority, deadline, or creation date
 - Filter tasks by completion status and tags
 - Customizable background color
+- Search functionality for tasks
+- "Due Soon" indicator for tasks approaching their deadline
+- Visual feedback for task editing
 
 ## Usage
 1. Click the '+' button to open the 'Add New Task' form.
@@ -21,6 +24,8 @@ The "Personal Task Manager" is a web application developed to manage daily tasks
 8. Filter tasks using the dropdown menu or by clicking on tags in the tag filter section.
 9. Customize the background color using the color picker in the bottom left corner.
 10. Manage tags by clicking the "Manage Tags" button.
+11. Use the search bar to find tasks by title or tags.
+12. Look for the "Due Soon" badge on tasks that are approaching their deadline (within 3 days).
 
 ## Recent Updates
 - Implemented column sorting with clickable headers
@@ -29,6 +34,9 @@ The "Personal Task Manager" is a web application developed to manage daily tasks
 - Enhanced tag filtering for tasks
 - Introduced background color customization
 - Enhanced UI with Font Awesome icons and toast notifications
+- Added search functionality for tasks
+- Implemented "Due Soon" indicator for tasks nearing their deadline
+- Added visual feedback for task editing
 
 ## Target User Group
 The application is designed for individuals like students, freelancers, and professionals who need a simple tool to organize their daily tasks.
