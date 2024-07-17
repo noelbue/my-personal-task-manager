@@ -4,6 +4,9 @@
       <h1 class="text-3xl font-bold">Personal Task Manager</h1>
       <button @click="toggleAddTask" class="bg-blue-500 text-white w-12 h-12 flex items-center justify-center rounded-full hover:bg-blue-700 text-2xl font-bold">+</button>
     </div>
+    <div class="mb-4">
+      <input v-model="searchQuery" placeholder="Search tasks..." class="border p-2 w-full rounded" />
+    </div>
     <div class="mb-4 text-left">
       <button @click="toggleManageTags" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700 mb-2">
         {{ showManageTags ? 'Hide' : 'Manage' }} Tags
@@ -194,11 +197,19 @@ export default {
         tags: []
       },
       showManageTags: false,
+      searchQuery: '',
     };
   },
   computed: {
     filteredAndSortedTasks() {
       let filteredTasks = this.tasks;
+      if (this.searchQuery.trim()) {
+        const query = this.searchQuery.toLowerCase();
+        filteredTasks = filteredTasks.filter(task => 
+          task.title.toLowerCase().includes(query) ||
+          task.tags.some(tag => tag.toLowerCase().includes(query))
+        );
+      }
       if (this.filterBy === 'completed') {
         filteredTasks = filteredTasks.filter(task => task.completed);
       } else if (this.filterBy === 'active') {

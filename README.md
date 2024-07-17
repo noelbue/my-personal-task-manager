@@ -1,4 +1,4 @@
-# Personal Task Manager Introduction
+# Personal Task Manager
 The "Personal Task Manager" is a web application developed to manage daily tasks. It provides a straightforward interface to track tasks efficiently.
 
 ## Features
