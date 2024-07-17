@@ -115,7 +115,7 @@
 
     <!-- Task List Header -->
     <!-- Displays column headers for the task list and allows sorting -->
-    <div class="grid grid-cols-5 gap-4 font-bold mb-2">
+    <div class="grid grid-cols-custom gap-4 font-bold mb-2">
       <div class="text-left cursor-pointer" @click="toggleSort('title')">
         Title
         <span class="ml-1">{{ getSortIcon('title') }}</span>
@@ -145,7 +145,7 @@
         class="p-4 transition duration-150 ease-in-out rounded mb-2">
 
       <!-- Task item content -->
-      <div class="grid grid-cols-5 gap-4 items-center">
+      <div class="grid grid-cols-custom gap-4 items-center">
 
         <!-- Task title and completion checkbox -->
         <div class="col-span-1 flex items-center">
@@ -153,7 +153,7 @@
             class="mr-3 form-checkbox h-5 w-5 text-blue-600 transition duration-150 ease-in-out" />
           <span v-if="!task.isEditing" :class="{ 'line-through text-gray-500': task.completed }" class="flex-grow text-left">
             {{ task.title }}
-            <span v-if="isDueSoon(task.deadline)" class="ml-2 bg-red-200 text-red-800 px-2 py-1 rounded-full text-xs">Due Soon</span>
+            <span v-if="isDueSoon(task.deadline)" class="ml-2 bg-red-200 text-red-800 px-2 py-1 rounded-full text-xs">Due&nbsp;Soon</span>
           </span>
           <input v-else v-model="task.editTitle" class="border p-1 mr-2 flex-grow rounded" />
         </div>
@@ -856,5 +856,9 @@ input[type="color"]::-webkit-color-swatch {
 input[type="color"]::-moz-color-swatch {
   border: none;
   border-radius: 50%;
+}
+.grid-cols-custom {
+  display: grid;
+  grid-template-columns: 3fr 0.5fr 1fr 1fr 0.5fr;
 }
 </style>
