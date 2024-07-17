@@ -1,6 +1,17 @@
 # Personal Task Manager
 The "Personal Task Manager" is a web application developed to manage daily tasks. It provides a straightforward interface to track tasks efficiently.
 
+## Table of Contents
+- [Features](#features)
+- [Usage](#usage)
+- [Recent Updates](#recent-updates)
+- [Target User Group](#target-user-group)
+- [Benefits of the Application](#benefits-of-the-application)
+- [Technical Components](#technical-components)
+- [High-Level Architecture Diagram](#high-level-architecture-diagram)
+- [Setup and Installation](#setup-and-installation)
+- [API Endpoints](#api-endpoints)
+
 ## Features
 - Create, edit, duplicate, and delete tasks
 - Mark tasks as complete or incomplete
