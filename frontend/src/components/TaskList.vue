@@ -19,6 +19,7 @@
 
       <!-- Tag management form (visible when showManageTags is true) -->
       <div v-if="showManageTags">
+        <div :style="{ borderBottom: '1px solid black', margin: '20px 0' }"></div>
         <h3 class="text-xl font-bold mb-2 text-left">Manage Tags</h3>
         <div class="flex mb-2 items-center">
           <input v-model="newTagName" placeholder="New tag name" class="border p-2 mr-4" />
@@ -45,6 +46,7 @@
             </div>
           </div>
         </div>
+        <div :style="{ borderBottom: '1px solid black', margin: '20px 0' }"></div>
       </div>
 
       <!-- Search Input -->
