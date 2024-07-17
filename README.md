@@ -2,22 +2,31 @@
 The "Personal Task Manager" is a web application developed to manage daily tasks. It provides a straightforward interface to track tasks efficiently.
 
 ## Features
-- Create, edit, and delete tasks
+- Create, edit, duplicate, and delete tasks
 - Mark tasks as complete or incomplete
 - Set task priorities (Low, Medium, High)
-- Add tags to tasks for better organization
-- Sort tasks by title, priority, or creation date
-- Filter tasks by completion status (All, Completed, Active)
-- Task duplication: Users can now create copies of existing tasks
-- Background color customization: Users can change the application's background color
+- Add and manage tags for better task organization
+- Sort tasks by title, priority, deadline, or creation date
+- Filter tasks by completion status and tags
+- Customizable background color
 
 ## Usage
-1. Add a new task by entering a title, selecting a priority, and optionally adding a tag.
-2. Edit a task by clicking the "Edit" button, modifying the details, and clicking "Save".
-3. Delete a task by clicking the "Delete" button.
-4. Mark a task as complete or incomplete by clicking the checkbox next to it.
-5. Sort tasks using the "Sort by" dropdown menu.
-6. Filter tasks using the "Filter" dropdown menu.
+1. Click the '+' button to open the 'Add New Task' form.
+2. Add a new task by entering a title, selecting a priority, setting a deadline, and optionally adding tags.
+3. Edit a task by clicking the edit icon, modifying the details, and clicking the save icon.
+4. Duplicate a task by clicking the clone icon.
+5. Delete a task by clicking the trash icon.
+6. Mark a task as complete or incomplete by clicking the checkbox next to it.
+7. Sort tasks by clicking on the column headers (Title, Priority, Deadline).
+8. Filter tasks using the dropdown menu or by clicking on tags in the tag filter section.
+9. Customize the background color using the color picker in the bottom left corner.
+
+## Recent Updates
+- Implemented column sorting with clickable headers
+- Added task duplication feature
+- Improved tag management and filtering
+- Introduced background color customization
+- Enhanced UI with Font Awesome icons and toast notifications
 
 ## Target User Group
 The application is designed for individuals like students, freelancers, and professionals who need a simple tool to organize their daily tasks.
@@ -45,34 +54,32 @@ To run this project locally, follow these steps:
 2. Clone the repository:
 ```
 git clone git@github.com:noelbuergler-iustudy/PJWD_P2_S.git
-cd [repository-name]
+cd PJWD_P2_S
 ```
-3. Install backend dependencies:
+3. Install dependencies:
 ```
 npm install
-```
-4. Set up the frontend:
-```
 cd frontend
 npm install
-```
-5. Install global dependencies:
-```
-npm install -g @vue/cli
-```
-6. Set up Tailwind CSS:
-```
 npm install -D tailwindcss postcss autoprefixer
 npx tailwindcss init -p
 ```
 
-### Dependencies
+### Run it
+To start the backend:
+```
+cd PJWD_P2_S
+node server.js
+```
+To start the frontend:
+```
+cd PJWD_P2_S/frontend
+npm run serve
+```
 
-#### Backend:
+### Dependencies
 - Express.js
 - SQLite3
-
-#### Frontend:
 - Vue.js
 - Tailwind CSS
 - vue-toast-notification
