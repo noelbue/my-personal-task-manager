@@ -1,3 +1,8 @@
+/**
+ * Express server for the Personal Task Manager application.
+ * This server provides API endpoints for managing tasks and tags,
+ * and uses SQLite as the database.
+ */
 const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
 const PORT = process.env.PORT || 3000;

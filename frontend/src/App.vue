@@ -7,9 +7,16 @@
 <script>
 import TaskList from './components/TaskList.vue';
 
+/**
+ * App component serves as the main container for the Personal Task Manager application.
+ * It includes the TaskList component which handles all task management functionality.
+ */
 export default {
   name: 'App',
   components: {
+    /**
+     * TaskList component handles the display and management of tasks.
+     */
     TaskList,
   },
 };

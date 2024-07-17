@@ -1,9 +1,13 @@
 <template>
   <div class="container mx-auto p-4">
+
+    <!-- Header with add task button -->
     <div class="flex justify-between items-center mb-4">
       <h1 class="text-3xl font-bold">Personal Task Manager</h1>
       <button @click="toggleAddTask" class="bg-blue-500 text-white w-12 h-12 flex items-center justify-center rounded-full hover:bg-blue-700 text-2xl font-bold">+</button>
     </div>
+
+    <!-- Tag management section -->
     <div class="mb-4 text-left">
       <button @click="toggleManageTags" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700 mb-2">
         {{ showManageTags ? 'Hide' : 'Manage' }} Tags
@@ -36,10 +40,15 @@
           </div>
         </div>
       </div>
+
+      <!-- Search input -->
       <div class="mb-4">
         <input v-model="searchQuery" placeholder="Search tasks..." class="border p-2 w-full rounded" />
       </div>
+
     </div>
+
+    <!-- Add new task form -->
     <div v-if="showAddTaskForm" class="mb-8 p-6 bg-gray-100 rounded-lg shadow-md">
       <h2 class="text-2xl font-bold mb-4">Add New Task</h2>
       <input v-model="newTask.title" placeholder="Task title" class="border p-2 w-full mb-3 rounded" />
@@ -64,6 +73,8 @@
       </div>
       <button @click="addTask" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700 w-full transition duration-300">Add Task</button>
     </div>
+
+    <!-- Task filtering and sorting controls -->
     <div class="mb-6 flex flex-wrap justify-between items-center">
       <div class="mb-2 sm:mb-0">
         <label class="mr-2 font-semibold">Filter:</label>
@@ -85,6 +96,8 @@
         </span>
       </div>
     </div>
+
+    <!-- Task list -->
     <div class="grid grid-cols-5 gap-4 font-bold mb-2">
       <div class="text-left cursor-pointer" @click="toggleSort('title')">
         Title
@@ -175,6 +188,8 @@
       No tasks available
     </div>
   </div>
+
+  <!-- Background color picker -->
   <div class="fixed bottom-4 left-4 flex items-center bg-white p-2 rounded-lg shadow-md">
     <label for="bgColor" class="mr-2 text-sm font-medium text-gray-700">Change background color:</label>
     <input type="color" id="bgColor" v-model="bgColor"
@@ -183,30 +198,106 @@
 </template>
 
 <script>
+/**
+ * TaskList component
+ * @displayName TaskList
+ * @description A comprehensive task management component that allows users to create, edit, delete, and organize tasks with tags, priorities, and deadlines.
+ */
 export default {
+  name: 'TaskList',
   data() {
     return {
+
+      /**
+       * Array of task objects
+       * @type {Array<Object>}
+       */
       tasks: [],
+
+      /**
+       * Current sort criteria for tasks
+       * @type {string}
+       */
       sortBy: 'creationDate',
+
+      /**
+       * Current filter criteria for tasks
+       * @type {string}
+       */
       filterBy: 'all',
+
+      /**
+       * Background color of the application
+       * @type {string}
+       */
       bgColor: localStorage.getItem('bgColor') || '#f3f4f6',
+
+      /**
+       * Array of tags used for filtering tasks
+       * @type {Array<string>}
+       */
       tagFilters: [],
+
+      /**
+       * Sort direction (ascending or descending)
+       * @type {string}
+       */
       sortDirection: 'asc',
+
+      /**
+       * Flag to show/hide the add task form
+       * @type {boolean}
+       */
       showAddTaskForm: false,
+
+      /**
+       * Array of tag objects
+       * @type {Array<Object>}
+       */
       tags: [],
+
+      /**
+       * Name for a new tag
+       * @type {string}
+       */
       newTagName: '',
+
+      /**
+       * Color for a new tag
+       * @type {string}
+       */
       newTagColor: '#E6F3FF',
+
+      /**
+       * Object to hold data for a new task
+       * @type {Object}
+       */
       newTask: {
         title: '',
         priority: '',
         deadline: new Date().toISOString().split('T')[0], // Today's date in YYYY-MM-DD format
         tags: []
       },
+
+      /**
+       * Flag to show/hide the tag management section
+       * @type {boolean}
+       */
       showManageTags: false,
+
+      /**
+       * Query string for searching tasks
+       * @type {string}
+       */
       searchQuery: '',
     };
   },
   computed: {
+
+    /**
+     * Filters and sorts tasks based on current criteria
+     * @returns {Array<Object>} Filtered and sorted array of tasks
+     */
     filteredAndSortedTasks() {
       let filteredTasks = this.tasks;
       if (this.searchQuery.trim()) {
@@ -240,23 +331,40 @@ export default {
         return this.sortDirection === 'asc' ? comparison : -comparison;
       });
     },
+
+    /**
+     * Computes unique tags from all tasks
+     * @returns {Array<string>} Array of unique tag names
+     */
     uniqueTags() {
       const allTags = this.tasks.flatMap(task => task.tags);
       return [...new Set(allTags)];
     }
   },
   mounted() {
+    /**
+     * Lifecycle hook to fetch initial data and set up the component
+     */
     this.fetchTasks();
     this.fetchTags();
     document.body.style.backgroundColor = this.bgColor;
   },
   watch: {
+    /**
+     * Watcher for background color changes
+     * @param {string} newColor - The new background color
+     */
     bgColor(newColor) {
       document.body.style.backgroundColor = newColor;
       localStorage.setItem('bgColor', newColor);
     },
   },
   methods: {
+
+    /**
+     * Fetches tasks from the API
+     * @async
+     */
     async fetchTasks() {
       try {
         const response = await fetch('/api/tasks');
@@ -277,6 +385,11 @@ export default {
         });
       }
     },
+    
+    /**
+     * Adds a new task
+     * @async
+     */
     async addTask() {
       if (!this.newTask.title || !this.newTask.priority || !this.newTask.deadline) {
         this.$toast.error('Please fill in all required fields.', {
@@ -320,6 +433,12 @@ export default {
         });
       }
     },
+
+    /**
+     * Toggles the completion status of a task
+     * @async
+     * @param {Object} task - The task to toggle
+     */
     async toggleTaskCompletion(task) {
       const updatedTask = { ...task, completed: !task.completed };
       try {
@@ -337,6 +456,11 @@ export default {
         });
       }
     },
+
+    /**
+     * Puts a task into edit mode
+     * @param {Object} task - The task to edit
+     */
     editTask(task) {
       task.isEditing = true;
       task.editTitle = task.title;
@@ -344,6 +468,12 @@ export default {
       task.editDeadline = task.deadline;
       task.editTags = [...task.tags];
     },
+
+    /**
+     * Saves edits made to a task
+     * @async
+     * @param {Object} task - The task being edited
+     */
     async saveTaskEdit(task) {
       const updatedTask = { 
         ...task, 
@@ -368,9 +498,20 @@ export default {
         });
       }
     },
+
+    /**
+     * Cancels the editing of a task
+     * @param {Object} task - The task being edited
+     */
     cancelTaskEdit(task) {
       task.isEditing = false;
     },
+
+    /**
+     * Deletes a task
+     * @async
+     * @param {number} taskId - The ID of the task to delete
+     */
     async deleteTask(taskId) {
       if (confirm('Are you sure you want to delete this task?')) {
         try {
@@ -385,6 +526,12 @@ export default {
         }
       }
     },
+
+    /**
+     * Returns an emoji based on the task priority
+     * @param {number} priority - The priority level
+     * @returns {string} An emoji representing the priority
+     */
     getPriorityEmoji(priority) {
       switch (parseInt(priority)) {
         case 1: return '⚪';
@@ -393,11 +540,23 @@ export default {
         default: return '';
       }
     },
+
+    /**
+     * Formats a date string
+     * @param {string} dateString - The date string to format
+     * @returns {string} Formatted date string
+     */
     formatDate(dateString) {
       if (!dateString) return 'No deadline';
       const date = new Date(dateString);
       return date.toLocaleDateString();
     },
+
+    /**
+     * Duplicates a task
+     * @async
+     * @param {Object} task - The task to duplicate
+     */
     async duplicateTask(task) {
       const duplicatedTask = {
         title: `${task.title} (Copy)`,
@@ -423,6 +582,11 @@ export default {
         });
       }
     },
+
+    /**
+     * Toggles a tag filter
+     * @param {string} tag - The tag to toggle in the filter
+     */
     toggleTagFilter(tag) {
       const index = this.tagFilters.indexOf(tag);
       if (index === -1) {
@@ -431,6 +595,11 @@ export default {
         this.tagFilters.splice(index, 1);
       }
     },
+
+    /**
+     * Toggles the sort direction for a given field
+     * @param {string} field - The field to sort by
+     */
     toggleSort(field) {
       if (this.sortBy === field) {
         this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
@@ -439,13 +608,28 @@ export default {
         this.sortDirection = 'asc';
       }
     },
+
+    /**
+     * Returns the appropriate sort icon
+     * @param {string} field - The field being sorted
+     * @returns {string} An emoji representing the sort direction
+     */
     getSortIcon(field) {
       if (this.sortBy !== field) return '↕️';
       return this.sortDirection === 'asc' ? '↑' : '↓';
     },
+
+    /**
+     * Toggles the visibility of the add task form
+     */
     toggleAddTask() {
       this.showAddTaskForm = !this.showAddTaskForm;
     },
+
+    /**
+     * Adds a new tag
+     * @async
+     */
     async addTag() {
       if (this.newTagName.trim() && !this.tags.some(tag => tag.name === this.newTagName.trim())) {
         const newTag = { name: this.newTagName.trim(), color: this.newTagColor };
@@ -473,9 +657,19 @@ export default {
         });
       }
     },
+
+    /**
+     * Puts a tag into edit mode
+     * @param {Object} tag - The tag to edit
+     */
     editTag(tag) {
       tag.isEditing = true;
     },
+
+    /**
+     * Saves edits made to a tag
+     * @param {Object} tag - The tag being edited
+     */
     saveTagEdit(tag) {
       if (tag.name.trim() && !this.tags.some(t => t.name === tag.name.trim() && t !== tag)) {
         tag.name = tag.name.trim();
@@ -487,6 +681,12 @@ export default {
         });
       }
     },
+
+    /**
+     * Deletes a tag
+     * @async
+     * @param {Object} tagToDelete - The tag to delete
+     */
     async deleteTag(tagToDelete) {
       try {
         await fetch(`/api/tags/${tagToDelete.id}`, { method: 'DELETE' });
@@ -503,6 +703,12 @@ export default {
         });
       }
     },
+
+    /**
+     * Updates a task on the server
+     * @async
+     * @param {Object} task - The task to update
+     */
     async updateTask(task) {
       try {
         await fetch(`/api/tasks/${task.id}`, {
@@ -514,6 +720,12 @@ export default {
         console.error('Error updating task:', error);
       }
     },
+
+    /**
+     * Determines the text color based on the background color
+     * @param {string} backgroundColor - The background color
+     * @returns {string} Either 'black' or 'white'
+     */
     getTextColor(backgroundColor) {
       if (!backgroundColor) return 'black';
       const r = parseInt(backgroundColor.slice(1, 3), 16);
@@ -522,6 +734,11 @@ export default {
       const brightness = (r * 299 + g * 587 + b * 114) / 1000;
       return brightness > 128 ? 'black' : 'white';
     },
+
+    /**
+     * Fetches tags from the API
+     * @async
+     */
     async fetchTags() {
       try {
         const response = await fetch('/api/tags');
@@ -535,6 +752,12 @@ export default {
         });
       }
     },
+
+    /**
+     * Toggles a tag for a task
+     * @param {Array<string>} taskTags - The task's current tags
+     * @param {string} tagName - The tag to toggle
+     */
     toggleTaskTag(taskTags, tagName) {
       const index = taskTags.indexOf(tagName);
       if (index === -1) {
@@ -543,9 +766,19 @@ export default {
         taskTags.splice(index, 1);
       }
     },
+
+    /**
+     * Toggles the visibility of the tag management section
+     */
     toggleManageTags() {
       this.showManageTags = !this.showManageTags;
     },
+
+    /**
+     * Checks if a task is due soon (within 3 days)
+     * @param {string} deadline - The task's deadline
+     * @returns {boolean} True if the task is due soon, false otherwise
+     */
     isDueSoon(deadline) {
       if (!deadline) return false;
       const dueDate = new Date(deadline);
