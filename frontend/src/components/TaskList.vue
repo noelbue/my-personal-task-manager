@@ -109,6 +109,7 @@
             class="mr-3 form-checkbox h-5 w-5 text-blue-600 transition duration-150 ease-in-out" />
           <span v-if="!task.isEditing" :class="{ 'line-through text-gray-500': task.completed }" class="flex-grow text-left">
             {{ task.title }}
+            <span v-if="isDueSoon(task.deadline)" class="ml-2 bg-red-200 text-red-800 px-2 py-1 rounded-full text-xs">Due Soon</span>
           </span>
           <input v-else v-model="task.editTitle" class="border p-1 mr-2 flex-grow rounded" />
         </div>
@@ -524,6 +525,14 @@ export default {
     },
     toggleManageTags() {
       this.showManageTags = !this.showManageTags;
+    },
+    isDueSoon(deadline) {
+      if (!deadline) return false;
+      const dueDate = new Date(deadline);
+      const today = new Date();
+      const diffTime = dueDate - today;
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      return diffDays >= 0 && diffDays <= 3;
     },
   },
 };
