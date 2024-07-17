@@ -4,9 +4,6 @@
       <h1 class="text-3xl font-bold">Personal Task Manager</h1>
       <button @click="toggleAddTask" class="bg-blue-500 text-white w-12 h-12 flex items-center justify-center rounded-full hover:bg-blue-700 text-2xl font-bold">+</button>
     </div>
-    <div class="mb-4">
-      <input v-model="searchQuery" placeholder="Search tasks..." class="border p-2 w-full rounded" />
-    </div>
     <div class="mb-4 text-left">
       <button @click="toggleManageTags" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700 mb-2">
         {{ showManageTags ? 'Hide' : 'Manage' }} Tags
@@ -38,6 +35,9 @@
             </div>
           </div>
         </div>
+      </div>
+      <div class="mb-4">
+        <input v-model="searchQuery" placeholder="Search tasks..." class="border p-2 w-full rounded" />
       </div>
     </div>
     <div v-if="showAddTaskForm" class="mb-8 p-6 bg-gray-100 rounded-lg shadow-md">
@@ -74,8 +74,8 @@
         </select>
       </div>
     </div>
-    <div class="mb-4">
-      <label class="mr-2 font-semibold">Filter by tags:</label>
+    <div class="mb-4 text-left">
+      <label class="font-semibold block mb-2">Filter by tags:</label>
       <div class="flex flex-wrap">
         <span v-for="tag in uniqueTags" :key="tag" 
               @click="toggleTagFilter(tag)"
@@ -102,8 +102,13 @@
       <div class="text-right">Actions</div>
     </div>
     <transition-group name="list" tag="ul" class="bg-white shadow-lg rounded-lg divide-y divide-gray-200">
-      <li v-for="task in filteredAndSortedTasks" :key="task.id" class="p-4 hover:bg-gray-50 transition duration-150 ease-in-out">
-        <div class="grid grid-cols-5 gap-4 items-center">
+      <li v-for="task in filteredAndSortedTasks" :key="task.id" 
+        :class="{
+          'bg-blue-50 border-2 border-blue-300': task.isEditing,
+          'hover:bg-gray-50': !task.isEditing
+        }"
+        class="p-4 transition duration-150 ease-in-out rounded mb-2">
+      <div class="grid grid-cols-5 gap-4 items-center">
         <div class="col-span-1 flex items-center">
           <input type="checkbox" :checked="task.completed" @change="toggleTaskCompletion(task)"
             class="mr-3 form-checkbox h-5 w-5 text-blue-600 transition duration-150 ease-in-out" />
@@ -441,11 +446,26 @@ export default {
     toggleAddTask() {
       this.showAddTaskForm = !this.showAddTaskForm;
     },
-    addTag() {
+    async addTag() {
       if (this.newTagName.trim() && !this.tags.some(tag => tag.name === this.newTagName.trim())) {
-        this.tags.push({ name: this.newTagName.trim(), color: this.newTagColor });
-        this.newTagName = '';
-        this.newTagColor = '#E6F3FF';
+        const newTag = { name: this.newTagName.trim(), color: this.newTagColor };
+        try {
+          const response = await fetch('/api/tags', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(newTag),
+          });
+          const data = await response.json();
+          this.tags.push({ ...newTag, id: data.id });
+          this.newTagName = '';
+          this.newTagColor = '#E6F3FF';
+        } catch (error) {
+          console.error('Error adding tag:', error);
+          this.$toast.error('Failed to add tag. Please try again.', {
+            position: 'top-right',
+            duration: 3000
+          });
+        }
       } else {
         this.$toast.error('Tag name is empty or already exists', {
           position: 'top-right',
@@ -470,7 +490,7 @@ export default {
     async deleteTag(tagToDelete) {
       try {
         await fetch(`/api/tags/${tagToDelete.id}`, { method: 'DELETE' });
-        this.tags = this.tags.filter(tag => tag !== tagToDelete);
+        this.tags = this.tags.filter(tag => tag.id !== tagToDelete.id);
         this.tasks.forEach(task => {
           task.tags = task.tags.filter(tag => tag !== tagToDelete.name);
           this.updateTask(task);
