@@ -1,17 +1,23 @@
 <template>
   <div class="container mx-auto p-4">
 
-    <!-- Header with add task button -->
+    <!-- Header Section -->
+    <!-- This section contains the main title and the button to add a new task -->
     <div class="flex justify-between items-center mb-4">
       <h1 class="text-3xl font-bold">Personal Task Manager</h1>
       <button @click="toggleAddTask" class="bg-blue-500 text-white w-12 h-12 flex items-center justify-center rounded-full hover:bg-blue-700 text-2xl font-bold">+</button>
     </div>
 
-    <!-- Tag management section -->
+    <!-- Tag Management Section -->
+    <!-- This section allows users to manage (add, edit, delete) tags -->
     <div class="mb-4 text-left">
+
+      <!-- Toggle button for showing/hiding tag management -->
       <button @click="toggleManageTags" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700 mb-2">
         {{ showManageTags ? 'Hide' : 'Manage' }} Tags
       </button>
+
+      <!-- Tag management form (visible when showManageTags is true) -->
       <div v-if="showManageTags">
         <h3 class="text-xl font-bold mb-2 text-left">Manage Tags</h3>
         <div class="flex mb-2 items-center">
@@ -41,14 +47,16 @@
         </div>
       </div>
 
-      <!-- Search input -->
+      <!-- Search Input -->
+      <!-- Allows users to search for tasks by title or tags -->
       <div class="mb-4">
         <input v-model="searchQuery" placeholder="Search tasks..." class="border p-2 w-full rounded" />
       </div>
 
     </div>
 
-    <!-- Add new task form -->
+    <!-- Add New Task Form -->
+    <!-- This form is displayed when the user clicks the add task button -->
     <div v-if="showAddTaskForm" class="mb-8 p-6 bg-gray-100 rounded-lg shadow-md">
       <h2 class="text-2xl font-bold mb-4">Add New Task</h2>
       <input v-model="newTask.title" placeholder="Task title" class="border p-2 w-full mb-3 rounded" />
@@ -74,8 +82,11 @@
       <button @click="addTask" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700 w-full transition duration-300">Add Task</button>
     </div>
 
-    <!-- Task filtering and sorting controls -->
+    <!-- Task Filtering and Sorting Controls -->
+    <!-- These controls allow users to filter tasks by status and sort them -->
     <div class="mb-6 flex flex-wrap justify-between items-center">
+
+      <!-- Dropdown for filtering tasks by completion status -->
       <div class="mb-2 sm:mb-0">
         <label class="mr-2 font-semibold">Filter:</label>
         <select v-model="filterBy" class="border p-2 rounded">
@@ -85,6 +96,9 @@
         </select>
       </div>
     </div>
+
+    <!-- Tag Filtering Section -->
+    <!-- Allows users to filter tasks by tags -->
     <div class="mb-4 text-left">
       <label class="font-semibold block mb-2">Filter by tags:</label>
       <div class="flex flex-wrap">
@@ -97,7 +111,8 @@
       </div>
     </div>
 
-    <!-- Task list -->
+    <!-- Task List Header -->
+    <!-- Displays column headers for the task list and allows sorting -->
     <div class="grid grid-cols-5 gap-4 font-bold mb-2">
       <div class="text-left cursor-pointer" @click="toggleSort('title')">
         Title
@@ -114,14 +129,23 @@
       <div class="text-center">Tags</div>
       <div class="text-right">Actions</div>
     </div>
+
+    <!-- Task List -->
+    <!-- Displays the list of tasks with transition effects -->
     <transition-group name="list" tag="ul" class="bg-white shadow-lg rounded-lg divide-y divide-gray-200">
+
+      <!-- Each task item -->
       <li v-for="task in filteredAndSortedTasks" :key="task.id" 
         :class="{
           'bg-blue-50 border-2 border-blue-300': task.isEditing,
           'hover:bg-gray-50': !task.isEditing
         }"
         class="p-4 transition duration-150 ease-in-out rounded mb-2">
+
+      <!-- Task item content -->
       <div class="grid grid-cols-5 gap-4 items-center">
+
+        <!-- Task title and completion checkbox -->
         <div class="col-span-1 flex items-center">
           <input type="checkbox" :checked="task.completed" @change="toggleTaskCompletion(task)"
             class="mr-3 form-checkbox h-5 w-5 text-blue-600 transition duration-150 ease-in-out" />
@@ -131,6 +155,8 @@
           </span>
           <input v-else v-model="task.editTitle" class="border p-1 mr-2 flex-grow rounded" />
         </div>
+
+        <!-- Task priority -->
         <div class="col-span-1 text-center">
           <span v-if="!task.isEditing">{{ getPriorityEmoji(task.priority) }}</span>
           <select v-else v-model="task.editPriority" class="border p-1 rounded">
@@ -139,10 +165,14 @@
             <option value="3">High 🔴</option>
           </select>
         </div>
+
+        <!-- Task deadline -->
         <div class="col-span-1 text-center">
           <span v-if="!task.isEditing">{{ formatDate(task.deadline) }}</span>
           <input v-else type="date" v-model="task.editDeadline" class="border p-1 rounded" />
         </div>
+
+        <!-- Task tags -->
         <div class="col-span-1">
           <div v-if="!task.isEditing" class="flex flex-wrap">
             <span v-for="tagName in task.tags" :key="tagName"
@@ -161,6 +191,8 @@
             </span>
           </div>
         </div>
+
+        <!-- Task actions (edit, delete, duplicate) -->
         <div class="col-span-1 flex justify-end">
           <button v-if="!task.isEditing" @click="editTask(task)" 
                   :disabled="task.completed"
@@ -184,12 +216,15 @@
       </div>
     </li>
   </transition-group>
+
+    <!-- Message for when no tasks are available -->
     <div v-if="!filteredAndSortedTasks.length" class="text-center text-gray-500 mt-4">
       No tasks available
     </div>
   </div>
 
-  <!-- Background color picker -->
+  <!-- Background Color Picker -->
+  <!-- Allows users to change the background color of the application -->
   <div class="fixed bottom-4 left-4 flex items-center bg-white p-2 rounded-lg shadow-md">
     <label for="bgColor" class="mr-2 text-sm font-medium text-gray-700">Change background color:</label>
     <input type="color" id="bgColor" v-model="bgColor"
