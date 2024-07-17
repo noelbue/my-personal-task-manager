@@ -5,7 +5,7 @@ The "Personal Task Manager" is a web application developed to manage daily tasks
 - Create, edit, duplicate, and delete tasks
 - Mark tasks as complete or incomplete
 - Set task priorities (Low, Medium, High)
-- Add and manage tags for better task organization
+- Add, edit, and delete tags for better task organization
 - Sort tasks by title, priority, deadline, or creation date
 - Filter tasks by completion status and tags
 - Customizable background color
@@ -20,11 +20,13 @@ The "Personal Task Manager" is a web application developed to manage daily tasks
 7. Sort tasks by clicking on the column headers (Title, Priority, Deadline).
 8. Filter tasks using the dropdown menu or by clicking on tags in the tag filter section.
 9. Customize the background color using the color picker in the bottom left corner.
+10. Manage tags by clicking the "Manage Tags" button.
 
 ## Recent Updates
 - Implemented column sorting with clickable headers
 - Added task duplication feature
-- Improved tag management and filtering
+- Improved tag management with creation, editing, and deletion capabilities
+- Enhanced tag filtering for tasks
 - Introduced background color customization
 - Enhanced UI with Font Awesome icons and toast notifications
 
@@ -91,6 +93,8 @@ Make sure to have Node.js and npm installed on your system before starting the s
 
 ## API Endpoints
 The server provides the following RESTful API endpoints:
+
+### Tasks
 1. `GET /api/tasks`
     - Retrieves all tasks
     - Response: JSON array of task objects
@@ -108,6 +112,19 @@ The server provides the following RESTful API endpoints:
     - URL parameter: task ID
     - Response: JSON object confirming the number of changes
 
+### Tags
+1. `GET /api/tags`
+    - Retrieves all tags
+    - Response: JSON array of tag objects
+2. `POST /api/tags`
+    - Creates a new tag
+    - Request body: JSON object with tag details (name, color)
+    - Response: JSON object with the new tag's ID
+3. `DELETE /api/tags/:id`
+    - Deletes a tag
+    - URL parameter: tag ID
+    - Response: JSON object confirming the number of changes
+
 Each task object includes:
 - id: Unique identifier (auto-generated)
 - title: Task description (required)
@@ -116,5 +133,10 @@ Each task object includes:
 - deadline: Date string for the task due date
 - creationDate: Date string when the task was created
 - tags: Array of strings for categorizing tasks
+
+Each tag object includes:
+- id: Unique identifier (auto-generated)
+- name: Tag name (required, unique)
+- color: Color code for the tag (e.g., "#E6F3FF")
 
 The server uses SQLite for data storage, with the database created in memory for this implementation.

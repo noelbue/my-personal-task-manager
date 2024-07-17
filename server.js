@@ -17,10 +17,10 @@ app.use(express.json());
 const db = new sqlite3.Database(':memory:');
 
 /**
- * Initialize the database by creating the tasks table
+ * Initialize the database by creating the tasks and tags table
  */
 db.serialize(() => {
-  db.run(`CREATE TABLE tasks (
+  db.run(`CREATE TABLE IF NOT EXISTS tasks (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT NOT NULL,
     completed BOOLEAN NOT NULL DEFAULT 0,
@@ -28,6 +28,11 @@ db.serialize(() => {
     deadline TEXT,
     creationDate TEXT NOT NULL,
     tags TEXT
+  )`);
+  db.run(`CREATE TABLE IF NOT EXISTS tags (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL UNIQUE,
+    color TEXT NOT NULL
   )`);
 });
 
@@ -123,6 +128,67 @@ app.delete('/api/tasks/:id', (req, res) => {
     }
     if (this.changes === 0) {
       res.status(404).json({ error: 'Task not found' });
+    } else {
+      res.json({ changes: this.changes });
+    }
+  });
+});
+
+/**
+ * GET /api/tags
+ * Retrieve all tags
+ * @param {express.Request} req - Express request object
+ * @param {express.Response} res - Express response object
+ */
+app.get('/api/tags', (req, res) => {
+  db.all('SELECT * FROM tags', (err, rows) => {
+    if (err) {
+      res.status(500).json({ error: 'Internal server error' });
+      console.error(err);
+      return;
+    }
+    res.json({ tags: rows });
+  });
+});
+
+/**
+ * POST /api/tags
+ * Create a new tag
+ * @param {express.Request} req - Express request object
+ * @param {express.Response} res - Express response object
+ */
+app.post('/api/tags', (req, res) => {
+  const { name, color } = req.body;
+  db.run(
+    'INSERT INTO tags (name, color) VALUES (?, ?)',
+    [name, color],
+    function (err) {
+      if (err) {
+        res.status(500).json({ error: 'Internal server error' });
+        console.error(err);
+        return;
+      }
+      res.status(201).json({ id: this.lastID, name, color });
+    }
+  );
+});
+
+/**
+ * DELETE /api/tags/:id
+ * Delete a task
+ * @param {express.Request} req - Express request object
+ * @param {express.Response} res - Express response object
+ */
+app.delete('/api/tags/:id', (req, res) => {
+  const { id } = req.params;
+  db.run('DELETE FROM tags WHERE id = ?', id, function (err) {
+    if (err) {
+      res.status(500).json({ error: 'Internal server error' });
+      console.error(err);
+      return;
+    }
+    if (this.changes === 0) {
+      res.status(404).json({ error: 'Tag not found' });
     } else {
       res.json({ changes: this.changes });
     }
