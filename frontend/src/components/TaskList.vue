@@ -1,7 +1,10 @@
 <template>
   <div class="container mx-auto p-4">
-    <h1 class="text-3xl font-bold mb-6">Personal Task Manager</h1>
-    <div class="mb-8 p-6 bg-gray-100 rounded-lg shadow-md">
+    <div class="flex justify-between items-center mb-4">
+      <h1 class="text-3xl font-bold">Personal Task Manager</h1>
+      <button @click="toggleAddTask" class="bg-blue-500 text-white w-12 h-12 flex items-center justify-center rounded-full hover:bg-blue-700 text-2xl font-bold">+</button>
+    </div>
+    <div v-if="showAddTaskForm" class="mb-8 p-6 bg-gray-100 rounded-lg shadow-md">
       <h2 class="text-2xl font-bold mb-4">Add New Task</h2>
       <input v-model="newTaskTitle" placeholder="Task title" class="border p-2 w-full mb-3 rounded" />
       <select v-model="newTaskPriority" class="border p-2 w-full mb-3 rounded">
@@ -13,7 +16,7 @@
       <input type="date" v-model="newTaskDeadline" class="border p-2 w-full mb-3 rounded" />
       <div class="flex mb-3">
         <input v-model="newTaskTag" placeholder="Add tag" class="border p-2 flex-grow mr-2 rounded" @keyup.enter="addTag" />
-        <button @click="addTag" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700 transition duration-300">Add Tag</button>
+        <button @click="addTag" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-blue-700 transition duration-300">Add Tag</button>
       </div>
       <div class="flex flex-wrap mb-3">
         <span v-for="(tag, index) in newTaskTags" :key="index" class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm mr-2 mb-2">
@@ -21,7 +24,7 @@
           <button @click="removeTag(index)" class="ml-1 text-red-500 hover:text-red-700">&times;</button>
         </span>
       </div>
-      <button @click="addTask" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700 w-full transition duration-300">Add Task</button>
+      <button @click="addTask" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-blue-700 w-full transition duration-300">Add Task</button>
     </div>
     <div class="mb-6 flex flex-wrap justify-between items-center">
       <div class="mb-2 sm:mb-0">
@@ -140,6 +143,7 @@ export default {
       bgColor: localStorage.getItem('bgColor') || '#f3f4f6',
       tagFilters: [],
       sortDirection: 'asc',
+      showAddTaskForm: false,
     };
   },
   computed: {
@@ -245,6 +249,11 @@ export default {
         this.newTaskPriority = '';
         this.newTaskDeadline = '';
         this.newTaskTags = [];
+        this.showAddTaskForm = false; // Close the form after adding a task
+        this.$toast.success('Task added successfully', {
+          position: 'top-right',
+          duration: 3000
+        });
       } catch (error) {
         console.error('Error adding task:', error);
         this.$toast.error('Failed to add task. Please try again.', {
@@ -373,6 +382,9 @@ export default {
     getSortIcon(field) {
       if (this.sortBy !== field) return '↕️';
       return this.sortDirection === 'asc' ? '↑' : '↓';
+    },
+    toggleAddTask() {
+      this.showAddTaskForm = !this.showAddTaskForm;
     },
   },
 };

@@ -8,6 +8,8 @@ The "Personal Task Manager" is a web application developed to manage daily tasks
 - Add tags to tasks for better organization
 - Sort tasks by title, priority, or creation date
 - Filter tasks by completion status (All, Completed, Active)
+- Task duplication: Users can now create copies of existing tasks
+- Background color customization: Users can change the application's background color
 
 ## Usage
 1. Add a new task by entering a title, selecting a priority, and optionally adding a tag.
