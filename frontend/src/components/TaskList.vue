@@ -5,7 +5,8 @@
     <!-- This section contains the main title and the button to add a new task -->
     <div class="flex justify-between items-center mb-4">
       <h1 class="text-3xl font-bold">Personal Task Manager</h1>
-      <button @click="toggleAddTask" class="bg-blue-500 text-white w-12 h-12 flex items-center justify-center rounded-full hover:bg-blue-700 text-2xl font-bold">+</button>
+      <button @click="toggleAddTask"
+        class="bg-blue-500 text-white w-12 h-12 flex items-center justify-center rounded-full hover:bg-blue-700 text-2xl font-bold">+</button>
     </div>
 
     <!-- Tag Management Section -->
@@ -23,14 +24,14 @@
         <h3 class="text-xl font-bold mb-2 text-left">Manage Tags</h3>
         <div class="flex mb-2 items-center">
           <input v-model="newTagName" placeholder="New tag name" class="border p-2 mr-4" />
-          <input type="color" v-model="newTagColor" class="w-10 h-10 p-0 border-none cursor-pointer rounded-full mr-4" />
+          <input type="color" v-model="newTagColor"
+            class="w-10 h-10 p-0 border-none cursor-pointer rounded-full mr-4" />
           <button @click="addTag" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700">Add Tag</button>
         </div>
         <div class="flex flex-wrap">
           <div v-for="tag in tags" :key="tag.name" class="mr-2 mb-2">
-            <span v-if="!tag.isEditing" 
-                  :style="{ backgroundColor: tag.color, color: getTextColor(tag.color) }" 
-                  class="px-2 py-1 rounded-full text-sm">
+            <span v-if="!tag.isEditing" :style="{ backgroundColor: tag.color, color: getTextColor(tag.color) }"
+              class="px-2 py-1 rounded-full text-sm">
               {{ tag.name }}
               <button @click="editTag(tag)" class="ml-1">
                 <font-awesome-icon :icon="['fas', 'pen']" />
@@ -42,7 +43,8 @@
             <div v-else class="flex">
               <input v-model="tag.name" class="border p-1 w-24" />
               <input type="color" v-model="tag.color" class="w-8 h-8 p-0 border-none cursor-pointer rounded-full" />
-              <button @click="saveTagEdit(tag)" class="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-700">Save</button>
+              <button @click="saveTagEdit(tag)"
+                class="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-700">Save</button>
             </div>
           </div>
         </div>
@@ -72,11 +74,10 @@
       <div class="mb-3">
         <h4 class="font-bold mb-1">Tags:</h4>
         <div v-if="tags.length > 0" class="flex flex-wrap">
-          <span v-for="tag in tags" :key="tag.name" 
-                @click="toggleTaskTag(newTask.tags, tag.name)"
-                :style="{ backgroundColor: tag.color, color: getTextColor(tag.color) }"
-                :class="{'opacity-30': !newTask.tags.includes(tag.name)}"
-                class="px-2 py-1 rounded-full text-sm mr-2 mb-2 cursor-pointer">
+          <span v-for="tag in tags" :key="tag.name" @click="toggleTaskTag(newTask.tags, tag.name)"
+            :style="{ backgroundColor: tag.color, color: getTextColor(tag.color) }"
+            :class="{ 'opacity-30': !newTask.tags.includes(tag.name) }"
+            class="px-2 py-1 rounded-full text-sm mr-2 mb-2 cursor-pointer">
             {{ tag.name }}
           </span>
         </div>
@@ -84,7 +85,9 @@
           No tags available. You can create tags in the Manage Tags section.
         </div>
       </div>
-      <button @click="addTask" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700 w-full transition duration-300">Add Task</button>
+      <button @click="addTask"
+        class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700 w-full transition duration-300">Add
+        Task</button>
     </div>
 
     <!-- Task Filtering and Sorting Controls -->
@@ -107,10 +110,9 @@
     <div class="mb-4 text-left">
       <label class="font-semibold block mb-2">Filter by tags:</label>
       <div class="flex flex-wrap">
-        <span v-for="tag in uniqueTags" :key="tag" 
-              @click="toggleTagFilter(tag)"
-              :class="{'bg-blue-500 text-white': tagFilters.includes(tag), 'bg-gray-200': !tagFilters.includes(tag)}"
-              class="px-2 py-1 rounded-full text-sm mr-2 mb-2 cursor-pointer">
+        <span v-for="tag in uniqueTags" :key="tag" @click="toggleTagFilter(tag)"
+          :class="{ 'bg-blue-500 text-white': tagFilters.includes(tag), 'bg-gray-200': !tagFilters.includes(tag) }"
+          class="px-2 py-1 rounded-full text-sm mr-2 mb-2 cursor-pointer">
           {{ tag }}
         </span>
       </div>
@@ -143,21 +145,26 @@
       <li v-for="task in filteredAndSortedTasks" :key="task.id" 
         :class="{
           'bg-blue-50 border-2 border-blue-300': task.isEditing,
-          'hover:bg-gray-50': !task.isEditing
-        }"
+          'hover:bg-gray-100': !task.isEditing && !task.completed,
+          'bg-gray-100': task.completed
+        }" 
         class="p-4 transition duration-150 ease-in-out rounded">
 
-      <!-- Task item content -->
+        <!-- Task item content -->
         <div class="grid grid-cols-custom gap-4 items-center">
 
           <!-- Task title and completion checkbox -->
           <div class="col-span-1 flex items-center">
             <input type="checkbox" :checked="task.completed" @change="toggleTaskCompletion(task)"
               class="mr-3 form-checkbox h-5 w-5 text-blue-600 transition duration-150 ease-in-out" />
-            <span v-if="!task.isEditing" :class="{ 'line-through text-gray-500': task.completed }" class="flex-grow text-left">
+            <span v-if="!task.isEditing" 
+              :class="{ 'line-through text-gray-500': task.completed,
+                'text-gray-900': !task.completed
+              }"
+              class="flex-grow text-left">
               {{ task.title }}
-              <span v-if="isDueSoon(task.deadline)" 
-                    class="ml-2 bg-red-200 text-red-800 rounded-full text-xs inline-flex items-center justify-center w-6 h-6 sm:w-auto sm:h-auto sm:px-2 sm:py-1">
+              <span v-if="isDueSoon(task.deadline)"
+                class="ml-2 bg-red-200 text-red-800 rounded-full text-xs inline-flex items-center justify-center w-6 h-6 sm:w-auto sm:h-auto sm:px-2 sm:py-1">
                 <span class="hidden sm:inline">Due Soon</span>
                 <span class="sm:hidden">!</span>
               </span>
@@ -185,17 +192,16 @@
           <div class="col-span-1">
             <div v-if="!task.isEditing" class="flex flex-wrap">
               <span v-for="tagName in task.tags" :key="tagName"
-                    :style="{ backgroundColor: tags.find(t => t.name === tagName)?.color || '#cccccc', color: getTextColor(tags.find(t => t.name === tagName)?.color) }"
-                    class="px-2 py-1 rounded-full text-sm mr-2 mb-2">
+                :style="{ backgroundColor: tags.find(t => t.name === tagName)?.color || '#cccccc', color: getTextColor(tags.find(t => t.name === tagName)?.color) }"
+                class="px-2 py-1 rounded-full text-sm mr-2 mb-2">
                 {{ tagName }}
               </span>
             </div>
             <div v-else class="flex flex-wrap">
-              <span v-for="tag in tags" :key="tag.name" 
-                    @click="toggleTaskTag(task.editTags, tag.name)"
-                    :style="{ backgroundColor: tag.color, color: getTextColor(tag.color) }"
-                    :class="{'opacity-50': !task.editTags.includes(tag.name)}"
-                    class="px-2 py-1 rounded-full text-sm mr-2 mb-2 cursor-pointer">
+              <span v-for="tag in tags" :key="tag.name" @click="toggleTaskTag(task.editTags, tag.name)"
+                :style="{ backgroundColor: tag.color, color: getTextColor(tag.color) }"
+                :class="{ 'opacity-50': !task.editTags.includes(tag.name) }"
+                class="px-2 py-1 rounded-full text-sm mr-2 mb-2 cursor-pointer">
                 {{ tag.name }}
               </span>
             </div>
@@ -204,33 +210,36 @@
           <!-- Task actions (edit, delete, duplicate) -->
           <div class="col-span-1 flex sm:justify-end">
             <div class="flex flex-col sm:flex-row">
-              <button v-if="!task.isEditing" @click="editTask(task)" 
-                      :disabled="task.completed"
-                      :class="{'opacity-50 cursor-not-allowed': task.completed}"
-                      class="text-gray-500 hover:text-blue-700 mb-2 sm:mb-0 sm:mr-2 transition duration-150 ease-in-out">
+              <button v-if="!task.isEditing" @click="editTask(task)" :disabled="task.completed"
+                :class="{ 'opacity-50 cursor-not-allowed': task.completed }"
+                class="text-gray-500 hover:text-blue-700 mb-2 sm:mb-0 sm:mr-2 transition duration-150 ease-in-out">
                 <font-awesome-icon :icon="['fas', 'pen']" />
               </button>
-              <button v-if="task.isEditing" @click="saveTaskEdit(task)" class="text-green-500 hover:text-green-700 mb-2 sm:mb-0 sm:mr-2 transition duration-150 ease-in-out">
+              <button v-if="task.isEditing" @click="saveTaskEdit(task)"
+                class="text-green-500 hover:text-green-700 mb-2 sm:mb-0 sm:mr-2 transition duration-150 ease-in-out">
                 <font-awesome-icon :icon="['fas', 'check']" />
               </button>
-              <button v-if="task.isEditing" @click="cancelTaskEdit(task)" class="text-red-500 hover:text-red-700 mb-2 sm:mb-0 sm:mr-2 transition duration-150 ease-in-out">
+              <button v-if="task.isEditing" @click="cancelTaskEdit(task)"
+                class="text-red-500 hover:text-red-700 mb-2 sm:mb-0 sm:mr-2 transition duration-150 ease-in-out">
                 <font-awesome-icon :icon="['fas', 'times']" />
               </button>
-              <button v-if="!task.isEditing" @click="duplicateTask(task)" class="text-gray-500 hover:text-blue-700 mb-2 sm:mb-0 sm:mr-2 transition duration-150 ease-in-out">
+              <button v-if="!task.isEditing" @click="duplicateTask(task)"
+                class="text-gray-500 hover:text-blue-700 mb-2 sm:mb-0 sm:mr-2 transition duration-150 ease-in-out">
                 <font-awesome-icon :icon="['fas', 'clone']" />
               </button>
-              <button v-if="!task.isEditing" @click="deleteTask(task.id)" class="text-gray-500 hover:text-red-700 transition duration-150 ease-in-out">
+              <button v-if="!task.isEditing" @click="deleteTask(task.id)"
+                class="text-gray-500 hover:text-red-700 transition duration-150 ease-in-out">
                 <font-awesome-icon :icon="['fas', 'trash']" />
               </button>
             </div>
           </div>
         </div>
-    </li>
-  </transition-group>
+      </li>
+    </transition-group>
 
     <!-- Message for when no tasks are available -->
     <div v-if="!filteredAndSortedTasks.length" class="text-center text-gray-500 mt-4">
-      No tasks available
+      No tasks available. Start by adding tasks or changing the filter.
     </div>
   </div>
 
@@ -238,8 +247,7 @@
   <!-- Allows users to change the background color of the application -->
   <div class="fixed bottom-4 left-4 flex items-center bg-white p-2 rounded-lg shadow-md">
     <label for="bgColor" class="mr-2 text-sm font-medium text-gray-700">Change background color:</label>
-    <input type="color" id="bgColor" v-model="bgColor"
-      class="w-8 h-8 p-0 border-none cursor-pointer" />
+    <input type="color" id="bgColor" v-model="bgColor" class="w-8 h-8 p-0 border-none cursor-pointer" />
   </div>
 </template>
 
@@ -348,7 +356,7 @@ export default {
       let filteredTasks = this.tasks;
       if (this.searchQuery.trim()) {
         const query = this.searchQuery.toLowerCase();
-        filteredTasks = filteredTasks.filter(task => 
+        filteredTasks = filteredTasks.filter(task =>
           task.title.toLowerCase().includes(query) ||
           task.tags.some(tag => tag.toLowerCase().includes(query))
         );
@@ -359,7 +367,7 @@ export default {
         filteredTasks = filteredTasks.filter(task => !task.completed);
       }
       if (this.tagFilters.length > 0) {
-        filteredTasks = filteredTasks.filter(task => 
+        filteredTasks = filteredTasks.filter(task =>
           this.tagFilters.every(tag => task.tags.includes(tag))
         );
       }
@@ -415,10 +423,10 @@ export default {
       try {
         const response = await fetch('/api/tasks');
         const data = await response.json();
-        this.tasks = data.tasks.map(task => ({ 
-          ...task, 
-          isEditing: false, 
-          editTitle: task.title, 
+        this.tasks = data.tasks.map(task => ({
+          ...task,
+          isEditing: false,
+          editTitle: task.title,
           editPriority: task.priority,
           editDeadline: task.deadline,
           tags: task.tags || []
@@ -431,7 +439,7 @@ export default {
         });
       }
     },
-    
+
     /**
      * Adds a new task
      * @async
@@ -521,10 +529,10 @@ export default {
      * @param {Object} task - The task being edited
      */
     async saveTaskEdit(task) {
-      const updatedTask = { 
-        ...task, 
-        title: task.editTitle, 
-        priority: parseInt(task.editPriority), 
+      const updatedTask = {
+        ...task,
+        title: task.editTitle,
+        priority: parseInt(task.editPriority),
         deadline: task.editDeadline,
         tags: task.editTags,
         isEditing: false,
@@ -623,8 +631,8 @@ export default {
       } catch (error) {
         console.error('Error duplicating task:', error);
         this.$toast.error('Failed to duplicate task. Please try again.', {
-            position: 'top-right',
-            duration: 3000
+          position: 'top-right',
+          duration: 3000
         });
       }
     },
@@ -838,13 +846,17 @@ export default {
 </script>
 
 <style scoped>
-.list-enter-active, .list-leave-active {
+.list-enter-active,
+.list-leave-active {
   transition: all 0.5s ease;
 }
-.list-enter-from, .list-leave-to {
+
+.list-enter-from,
+.list-leave-to {
   opacity: 0;
   transform: translateX(30px);
 }
+
 input[type="color"] {
   -webkit-appearance: none;
   -moz-appearance: none;
@@ -855,17 +867,21 @@ input[type="color"] {
   border: none;
   cursor: pointer;
 }
+
 input[type="color"]::-webkit-color-swatch-wrapper {
   padding: 0;
 }
+
 input[type="color"]::-webkit-color-swatch {
   border: none;
   border-radius: 50%;
 }
+
 input[type="color"]::-moz-color-swatch {
   border: none;
   border-radius: 50%;
 }
+
 .grid-cols-custom {
   display: grid;
   grid-template-columns: 3fr 0.5fr 1fr 1fr 0.5fr;
