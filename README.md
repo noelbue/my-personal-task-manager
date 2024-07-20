@@ -73,12 +73,12 @@ The application is designed for individuals like students, freelancers, and prof
 To run this project locally, follow these steps:
 1. Ensure you have Node.js and npm installed on your system.
 2. Clone the repository:
-```
+```bash
 git clone git@github.com:noelbuergler-iustudy/PJWD_P2_S.git
 cd PJWD_P2_S
 ```
 3. Install dependencies:
-```
+```bash
 npm install
 cd frontend
 npm install
@@ -88,12 +88,12 @@ npx tailwindcss init -p
 
 ### Run it
 To start the backend:
-```
+```bash
 cd PJWD_P2_S
 node server.js
 ```
 To start the frontend:
-```
+```bash
 cd PJWD_P2_S/frontend
 npm run serve
 ```
@@ -113,36 +113,99 @@ Make sure to have Node.js and npm installed on your system before starting the s
 ## API Endpoints
 The server provides the following RESTful API endpoints:
 
+### Tags
+1. `GET /api/tags`
+    - Retrieves all tags
+    - Response: JSON array of tag objects
+    ```bash
+    curl -X GET http://localhost:3000/api/tags
+    ```
+    Sample response:
+    ```json
+    {"tags":[{"id":1,"name":"Sample Tag","color":"#E6F3FF"}]}
+    ```
+
+2. `POST /api/tags`
+    - Creates a new tag
+    - Request body: JSON object with tag details (name, color)
+    - Response: JSON object with the new tag's ID
+    ```bash
+    curl -X POST http://localhost:3000/api/tags \
+    -H "Content-Type: application/json" \
+    -d '{"name":"Work","color":"#FF5733"}'
+    ```
+    Sample response:
+    ```json
+    {"id":2,"name":"Work","color":"#FF5733"}
+    ```
+
+3. `DELETE /api/tags/:id`
+    - Deletes a tag
+    - URL parameter: tag ID
+    - Response: JSON object confirming the number of changes
+    ```bash
+    curl -X DELETE http://localhost:3000/api/tags/2
+    ```
+    Sample response:
+    ```json
+    {"changes":1}
+    ```
+
 ### Tasks
 1. `GET /api/tasks`
     - Retrieves all tasks
     - Response: JSON array of task objects
+    ```bash
+    curl -X GET http://localhost:3000/api/tasks
+    ```
+    Sample response:
+    ```json
+    {"tasks":[{"id":1,"title":"Task","completed":0,"priority":1,"deadline":"2024-07-20","creationDate":"2024-07-20T05:03:06.185Z","tags":[]}]}
+    ```
+
 2. `POST /api/tasks`
     - Creates a new task
     - Request body: JSON object with task details (title, completed, priority, deadline, tags)
     - Response: JSON object with the new task's ID
+    - Note: Only existing tags can be assigned to a task
+    ```bash
+    curl -X POST http://localhost:3000/api/tasks \
+    -H "Content-Type: application/json" \
+    -d '{"title":"Complete project","completed":false,"priority":2,"deadline":"2024-12-31","tags":["Sample Tag"]}'
+    ```
+    Sample response:
+    ```json
+    {"id":2}
+    ```
+
 3. `PUT /api/tasks/:id`
     - Updates an existing task
     - URL parameter: task ID
     - Request body: JSON object with updated task details
     - Response: JSON object confirming the number of changes
+    ```bash
+    curl -X PUT http://localhost:3000/api/tasks/2 \
+    -H "Content-Type: application/json" \
+    -d '{"title":"Updated task title","completed":true,"priority":3,"deadline":"2024-11-30","tags":["Sample Tag"]}'
+    ```
+    Sample response:
+    ```json
+    {"changes":1}
+    ```
+
 4. `DELETE /api/tasks/:id`
     - Deletes a task
     - URL parameter: task ID
     - Response: JSON object confirming the number of changes
+    ```bash
+    curl -X DELETE http://localhost:3000/api/tasks/2
+    ```
+    Sample response:
+    ```json
+    {"changes":1}
+    ```
 
-### Tags
-1. `GET /api/tags`
-    - Retrieves all tags
-    - Response: JSON array of tag objects
-2. `POST /api/tags`
-    - Creates a new tag
-    - Request body: JSON object with tag details (name, color)
-    - Response: JSON object with the new tag's ID
-3. `DELETE /api/tags/:id`
-    - Deletes a tag
-    - URL parameter: tag ID
-    - Response: JSON object confirming the number of changes
+Note: When creating or updating tasks, only existing tags can be assigned. If a non-existent tag is provided, it will be ignored.
 
 Each task object includes:
 - id: Unique identifier (auto-generated)

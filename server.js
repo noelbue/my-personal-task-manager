@@ -42,6 +42,22 @@ db.serialize(() => {
 });
 
 /**
+ * Get existing tags from the database
+ * @returns {Promise<string[]>} Array of existing tag names
+ */
+function getExistingTags() {
+  return new Promise((resolve, reject) => {
+    db.all('SELECT name FROM tags', (err, rows) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(rows.map(row => row.name));
+      }
+    });
+  });
+}
+
+/**
  * GET /api/tasks
  * Retrieve all tasks
  * @param {express.Request} req - Express request object
@@ -71,20 +87,28 @@ app.get('/api/tasks', (req, res) => {
  * @param {express.Request} req - Express request object
  * @param {express.Response} res - Express response object
  */
-app.post('/api/tasks', (req, res) => {
+app.post('/api/tasks', async (req, res) => {
   const { title, completed, priority, deadline, creationDate, tags } = req.body;
-  db.run(
-    'INSERT INTO tasks (title, completed, priority, deadline, creationDate, tags) VALUES (?, ?, ?, ?, ?, ?)',
-    [title, completed ? 1 : 0, priority || 0, deadline, creationDate || new Date().toISOString(), JSON.stringify(tags || [])],
-    function (err) {
-      if (err) {
-        res.status(500).json({ error: 'Internal server error' });
-        console.error(err);
-        return;
+  try {
+    const existingTags = await getExistingTags();
+    const validTags = (tags || []).filter(tag => existingTags.includes(tag));
+
+    db.run(
+      'INSERT INTO tasks (title, completed, priority, deadline, creationDate, tags) VALUES (?, ?, ?, ?, ?, ?)',
+      [title, completed ? 1 : 0, priority || 0, deadline, creationDate || new Date().toISOString(), JSON.stringify(validTags)],
+      function (err) {
+        if (err) {
+          res.status(500).json({ error: 'Internal server error' });
+          console.error(err);
+          return;
+        }
+        res.status(201).json({ id: this.lastID });
       }
-      res.status(201).json({ id: this.lastID });
-    }
-  );
+    );
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
+    console.error(error);
+  }
 });
 
 /**
@@ -93,28 +117,36 @@ app.post('/api/tasks', (req, res) => {
  * @param {express.Request} req - Express request object
  * @param {express.Response} res - Express response object
  */
-app.put('/api/tasks/:id', (req, res) => {
+app.put('/api/tasks/:id', async (req, res) => {
   const { id } = req.params;
   const { title, completed, priority, deadline, tags } = req.body;
   if (!title || typeof title !== 'string') {
     return res.status(400).json({ error: 'Invalid title' });
   }
-  db.run(
-    'UPDATE tasks SET title = ?, completed = ?, priority = ?, deadline = ?, tags = ? WHERE id = ?',
-    [title, completed ? 1 : 0, priority || 0, deadline, JSON.stringify(tags || []), id],
-    function (err) {
-      if (err) {
-        res.status(500).json({ error: 'Internal server error' });
-        console.error(err);
-        return;
+  try {
+    const existingTags = await getExistingTags();
+    const validTags = (tags || []).filter(tag => existingTags.includes(tag));
+
+    db.run(
+      'UPDATE tasks SET title = ?, completed = ?, priority = ?, deadline = ?, tags = ? WHERE id = ?',
+      [title, completed ? 1 : 0, priority || 0, deadline, JSON.stringify(validTags), id],
+      function (err) {
+        if (err) {
+          res.status(500).json({ error: 'Internal server error' });
+          console.error(err);
+          return;
+        }
+        if (this.changes === 0) {
+          res.status(404).json({ error: 'Task not found' });
+        } else {
+          res.json({ changes: this.changes });
+        }
       }
-      if (this.changes === 0) {
-        res.status(404).json({ error: 'Task not found' });
-      } else {
-        res.json({ changes: this.changes });
-      }
-    }
-  );
+    );
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
+    console.error(error);
+  }
 });
 
 /**
