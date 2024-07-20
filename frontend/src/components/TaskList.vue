@@ -59,19 +59,19 @@
 
     <!-- Add New Task Form -->
     <!-- This form is displayed when the user clicks the add task button -->
-    <div v-if="showAddTaskForm" class="mb-8 p-6 bg-gray-100 rounded-lg shadow-md">
+    <div v-if="showAddTaskForm" class="mb-8 p-6 bg-gray-100 rounded-lg shadow-md text-left">
       <h2 class="text-2xl font-bold mb-4">Add New Task</h2>
       <input v-model="newTask.title" placeholder="Task title" class="border p-2 w-full mb-3 rounded" />
-        <select v-model="newTask.priority" class="border p-2 w-full mb-3 rounded">
-          <option value="" disabled selected>Select priority</option>
-          <option value="1">Low ⚪</option>
-          <option value="2">Medium 🟡</option>
-          <option value="3">High 🔴</option>
-        </select>
+      <select v-model="newTask.priority" class="border p-2 w-full mb-3 rounded">
+        <option value="" disabled selected>Select priority</option>
+        <option value="1">Low ⚪</option>
+        <option value="2">Medium 🟡</option>
+        <option value="3">High 🔴</option>
+      </select>
       <input type="date" v-model="newTask.deadline" class="border p-2 w-full mb-3 rounded" />
       <div class="mb-3">
-      <h4 class="font-bold mb-1">Tags:</h4>
-        <div class="flex flex-wrap">
+        <h4 class="font-bold mb-1">Tags:</h4>
+        <div v-if="tags.length > 0" class="flex flex-wrap">
           <span v-for="tag in tags" :key="tag.name" 
                 @click="toggleTaskTag(newTask.tags, tag.name)"
                 :style="{ backgroundColor: tag.color, color: getTextColor(tag.color) }"
@@ -79,6 +79,9 @@
                 class="px-2 py-1 rounded-full text-sm mr-2 mb-2 cursor-pointer">
             {{ tag.name }}
           </span>
+        </div>
+        <div v-else class="text-gray-500 italic">
+          No tags available. You can create tags in the Manage Tags section.
         </div>
       </div>
       <button @click="addTask" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700 w-full transition duration-300">Add Task</button>
@@ -142,80 +145,86 @@
           'bg-blue-50 border-2 border-blue-300': task.isEditing,
           'hover:bg-gray-50': !task.isEditing
         }"
-        class="p-4 transition duration-150 ease-in-out rounded mb-2">
+        class="p-4 transition duration-150 ease-in-out rounded">
 
       <!-- Task item content -->
-      <div class="grid grid-cols-custom gap-4 items-center">
+        <div class="grid grid-cols-custom gap-4 items-center">
 
-        <!-- Task title and completion checkbox -->
-        <div class="col-span-1 flex items-center">
-          <input type="checkbox" :checked="task.completed" @change="toggleTaskCompletion(task)"
-            class="mr-3 form-checkbox h-5 w-5 text-blue-600 transition duration-150 ease-in-out" />
-          <span v-if="!task.isEditing" :class="{ 'line-through text-gray-500': task.completed }" class="flex-grow text-left">
-            {{ task.title }}
-            <span v-if="isDueSoon(task.deadline)" class="ml-2 bg-red-200 text-red-800 px-2 py-1 rounded-full text-xs">Due&nbsp;Soon</span>
-          </span>
-          <input v-else v-model="task.editTitle" class="border p-1 mr-2 flex-grow rounded" />
-        </div>
-
-        <!-- Task priority -->
-        <div class="col-span-1 text-center">
-          <span v-if="!task.isEditing">{{ getPriorityEmoji(task.priority) }}</span>
-          <select v-else v-model="task.editPriority" class="border p-1 rounded">
-            <option value="1">Low ⚪</option>
-            <option value="2">Medium 🟡</option>
-            <option value="3">High 🔴</option>
-          </select>
-        </div>
-
-        <!-- Task deadline -->
-        <div class="col-span-1 text-center">
-          <span v-if="!task.isEditing">{{ formatDate(task.deadline) }}</span>
-          <input v-else type="date" v-model="task.editDeadline" class="border p-1 rounded" />
-        </div>
-
-        <!-- Task tags -->
-        <div class="col-span-1">
-          <div v-if="!task.isEditing" class="flex flex-wrap">
-            <span v-for="tagName in task.tags" :key="tagName"
-                  :style="{ backgroundColor: tags.find(t => t.name === tagName)?.color || '#cccccc', color: getTextColor(tags.find(t => t.name === tagName)?.color) }"
-                  class="px-2 py-1 rounded-full text-sm mr-2 mb-2">
-              {{ tagName }}
+          <!-- Task title and completion checkbox -->
+          <div class="col-span-1 flex items-center">
+            <input type="checkbox" :checked="task.completed" @change="toggleTaskCompletion(task)"
+              class="mr-3 form-checkbox h-5 w-5 text-blue-600 transition duration-150 ease-in-out" />
+            <span v-if="!task.isEditing" :class="{ 'line-through text-gray-500': task.completed }" class="flex-grow text-left">
+              {{ task.title }}
+              <span v-if="isDueSoon(task.deadline)" 
+                    class="ml-2 bg-red-200 text-red-800 rounded-full text-xs inline-flex items-center justify-center w-6 h-6 sm:w-auto sm:h-auto sm:px-2 sm:py-1">
+                <span class="hidden sm:inline">Due Soon</span>
+                <span class="sm:hidden">!</span>
+              </span>
             </span>
+            <input v-else v-model="task.editTitle" class="border p-1 mr-2 flex-grow rounded" />
           </div>
-          <div v-else class="flex flex-wrap">
-            <span v-for="tag in tags" :key="tag.name" 
-                  @click="toggleTaskTag(task.editTags, tag.name)"
-                  :style="{ backgroundColor: tag.color, color: getTextColor(tag.color) }"
-                  :class="{'opacity-50': !task.editTags.includes(tag.name)}"
-                  class="px-2 py-1 rounded-full text-sm mr-2 mb-2 cursor-pointer">
-              {{ tag.name }}
-            </span>
-          </div>
-        </div>
 
-        <!-- Task actions (edit, delete, duplicate) -->
-        <div class="col-span-1 flex justify-end">
-          <button v-if="!task.isEditing" @click="editTask(task)" 
-                  :disabled="task.completed"
-                  :class="{'opacity-50 cursor-not-allowed': task.completed}"
-                  class="text-gray-500 hover:text-blue-700 mr-2 transition duration-150 ease-in-out">
-            <font-awesome-icon :icon="['fas', 'pen']" />
-          </button>
-          <button v-if="task.isEditing" @click="saveTaskEdit(task)" class="text-green-500 hover:text-green-700 mr-2 transition duration-150 ease-in-out">
-            <font-awesome-icon :icon="['fas', 'check']" />
-          </button>
-          <button v-if="task.isEditing" @click="cancelTaskEdit(task)" class="text-red-500 hover:text-red-700 mr-2 transition duration-150 ease-in-out">
-            <font-awesome-icon :icon="['fas', 'times']" />
-          </button>
-          <button v-if="!task.isEditing" @click="duplicateTask(task)" class="text-gray-500 hover:text-blue-700 mr-2 transition duration-150 ease-in-out">
-            <font-awesome-icon :icon="['fas', 'clone']" />
-          </button>
-          <button v-if="!task.isEditing" @click="deleteTask(task.id)" class="text-gray-500 hover:text-red-700 transition duration-150 ease-in-out">
-            <font-awesome-icon :icon="['fas', 'trash']" />
-          </button>
+          <!-- Task priority -->
+          <div class="col-span-1 text-center">
+            <span v-if="!task.isEditing">{{ getPriorityEmoji(task.priority) }}</span>
+            <select v-else v-model="task.editPriority" class="border p-1 rounded">
+              <option value="1">Low ⚪</option>
+              <option value="2">Medium 🟡</option>
+              <option value="3">High 🔴</option>
+            </select>
+          </div>
+
+          <!-- Task deadline -->
+          <div class="col-span-1 text-center">
+            <span v-if="!task.isEditing">{{ formatDate(task.deadline) }}</span>
+            <input v-else type="date" v-model="task.editDeadline" class="border p-1 rounded" />
+          </div>
+
+          <!-- Task tags -->
+          <div class="col-span-1">
+            <div v-if="!task.isEditing" class="flex flex-wrap">
+              <span v-for="tagName in task.tags" :key="tagName"
+                    :style="{ backgroundColor: tags.find(t => t.name === tagName)?.color || '#cccccc', color: getTextColor(tags.find(t => t.name === tagName)?.color) }"
+                    class="px-2 py-1 rounded-full text-sm mr-2 mb-2">
+                {{ tagName }}
+              </span>
+            </div>
+            <div v-else class="flex flex-wrap">
+              <span v-for="tag in tags" :key="tag.name" 
+                    @click="toggleTaskTag(task.editTags, tag.name)"
+                    :style="{ backgroundColor: tag.color, color: getTextColor(tag.color) }"
+                    :class="{'opacity-50': !task.editTags.includes(tag.name)}"
+                    class="px-2 py-1 rounded-full text-sm mr-2 mb-2 cursor-pointer">
+                {{ tag.name }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Task actions (edit, delete, duplicate) -->
+          <div class="col-span-1 flex sm:justify-end">
+            <div class="flex flex-col sm:flex-row">
+              <button v-if="!task.isEditing" @click="editTask(task)" 
+                      :disabled="task.completed"
+                      :class="{'opacity-50 cursor-not-allowed': task.completed}"
+                      class="text-gray-500 hover:text-blue-700 mb-2 sm:mb-0 sm:mr-2 transition duration-150 ease-in-out">
+                <font-awesome-icon :icon="['fas', 'pen']" />
+              </button>
+              <button v-if="task.isEditing" @click="saveTaskEdit(task)" class="text-green-500 hover:text-green-700 mb-2 sm:mb-0 sm:mr-2 transition duration-150 ease-in-out">
+                <font-awesome-icon :icon="['fas', 'check']" />
+              </button>
+              <button v-if="task.isEditing" @click="cancelTaskEdit(task)" class="text-red-500 hover:text-red-700 mb-2 sm:mb-0 sm:mr-2 transition duration-150 ease-in-out">
+                <font-awesome-icon :icon="['fas', 'times']" />
+              </button>
+              <button v-if="!task.isEditing" @click="duplicateTask(task)" class="text-gray-500 hover:text-blue-700 mb-2 sm:mb-0 sm:mr-2 transition duration-150 ease-in-out">
+                <font-awesome-icon :icon="['fas', 'clone']" />
+              </button>
+              <button v-if="!task.isEditing" @click="deleteTask(task.id)" class="text-gray-500 hover:text-red-700 transition duration-150 ease-in-out">
+                <font-awesome-icon :icon="['fas', 'trash']" />
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
     </li>
   </transition-group>
 
