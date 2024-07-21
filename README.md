@@ -222,3 +222,83 @@ Each tag object includes:
 - color: Color code for the tag (e.g., "#E6F3FF")
 
 The server uses SQLite for data storage, with the database created in memory for this implementation.
+
+## Test Cases
+
+To ensure the reliability and correctness of the Personal Task Manager, the following test cases have been implemented:
+
+### Frontend Tests
+
+1. **Task Creation**
+   - Input: New task details (title, priority, deadline, tags)
+   - Expected Output: New task appears in the task list
+   - Test Steps:
+     1. Click the '+' button to open the 'Add New Task' form
+     2. Fill in task details
+     3. Click 'Add Task'
+     4. Verify the new task appears in the list
+
+2. **Task Editing**
+   - Input: Updated task details
+   - Expected Output: Task details are updated in the list
+   - Test Steps:
+     1. Click the edit icon on an existing task
+     2. Modify task details
+     3. Click the save icon
+     4. Verify the task details are updated in the list
+
+3. **Task Deletion**
+   - Input: Task to be deleted
+   - Expected Output: Task is removed from the list
+   - Test Steps:
+     1. Click the delete icon on an existing task
+     2. Confirm deletion in the prompt
+     3. Verify the task is removed from the list
+
+4. **Task Filtering**
+   - Input: Filter criteria (e.g., completed tasks, specific tag)
+   - Expected Output: Only tasks meeting the criteria are displayed
+   - Test Steps:
+     1. Select a filter option or click on a tag
+     2. Verify only relevant tasks are displayed
+
+5. **Task Sorting**
+   - Input: Sort criteria (e.g., by title, priority, deadline)
+   - Expected Output: Tasks are sorted according to the selected criteria
+   - Test Steps:
+     1. Click on a column header to sort
+     2. Verify tasks are arranged in the correct order
+
+### Backend Tests
+
+1. **GET /api/tasks**
+   - Input: GET request to /api/tasks
+   - Expected Output: JSON array of all tasks
+   - Test: Use curl or Postman to send a GET request and verify the response
+
+2. **POST /api/tasks**
+   - Input: POST request with new task data
+   - Expected Output: JSON object with the new task's ID
+   - Test: Use curl or Postman to send a POST request with task data and verify the response
+
+3. **PUT /api/tasks/:id**
+   - Input: PUT request with updated task data
+   - Expected Output: JSON object confirming the number of changes
+   - Test: Use curl or Postman to send a PUT request with updated task data and verify the response
+
+4. **DELETE /api/tasks/:id**
+   - Input: DELETE request with task ID
+   - Expected Output: JSON object confirming the number of changes
+   - Test: Use curl or Postman to send a DELETE request with a task ID and verify the response
+
+### Integration Tests
+
+1. **End-to-End Task Management**
+   - Test the full lifecycle of a task from creation to deletion
+   - Verify that frontend actions correctly interact with the backend API
+
+2. **Data Persistence**
+   - Create multiple tasks, refresh the page, and verify all tasks are still present
+   - Test that task updates persist after page reloads
+
+These test cases cover the core functionalities of the Personal Task Manager. They ensure that the application behaves correctly for various user interactions and API operations.
