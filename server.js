@@ -211,6 +211,33 @@ app.post('/api/tags', (req, res) => {
 });
 
 /**
+ * PUT /api/tags/:id
+ * Update an existing tag
+ * @param {express.Request} req - Express request object
+ * @param {express.Response} res - Express response object
+ */
+app.put('/api/tags/:id', (req, res) => {
+  const { id } = req.params;
+  const { name, color } = req.body;
+  db.run(
+    'UPDATE tags SET name = ?, color = ? WHERE id = ?',
+    [name, color, id],
+    function (err) {
+      if (err) {
+        res.status(500).json({ error: 'Internal server error' });
+        console.error(err);
+        return;
+      }
+      if (this.changes === 0) {
+        res.status(404).json({ error: 'Tag not found' });
+      } else {
+        res.json({ changes: this.changes });
+      }
+    }
+  );
+});
+
+/**
  * DELETE /api/tags/:id
  * Delete a task
  * @param {express.Request} req - Express request object

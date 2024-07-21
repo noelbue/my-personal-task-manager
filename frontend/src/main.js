@@ -5,13 +5,13 @@ import 'vue-toast-notification/dist/theme-sugar.css';
 import VueToast from 'vue-toast-notification';
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
-import { faTrash, faPen, faClone, faCheck, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { faTrash, faPen, faClone, faCheck, faTimes, faEllipsisV } from '@fortawesome/free-solid-svg-icons';
 
 /**
  * Add FontAwesome icons to the library.
  * These icons are used throughout the application for various UI elements.
  */
-library.add(faTrash, faPen, faClone, faCheck, faTimes);
+library.add(faTrash, faPen, faClone, faCheck, faTimes, faEllipsisV);
 
 /**
  * Create the Vue application instance.

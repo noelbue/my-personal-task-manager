@@ -139,7 +139,22 @@ The server provides the following RESTful API endpoints:
     {"id":2,"name":"Work","color":"#FF5733"}
     ```
 
-3. `DELETE /api/tags/:id`
+3. `PUT /api/tags/:id`
+    - Updates an existing tag
+    - URL parameter: tag ID
+    - Request body: JSON object with updated tag details (name, color)
+    - Response: JSON object confirming the number of changes
+    ```bash
+    curl -X PUT http://localhost:3000/api/tags/1 \
+    -H "Content-Type: application/json" \
+    -d '{"name":"Updated Tag","color":"#00FF00"}'
+    ```
+    Sample response:
+    ```json
+    {"changes":1}
+    ```
+
+4. `DELETE /api/tags/:id`
     - Deletes a tag
     - URL parameter: tag ID
     - Response: JSON object confirming the number of changes
@@ -230,75 +245,115 @@ To ensure the reliability and correctness of the Personal Task Manager, the foll
 ### Frontend Tests
 
 1. **Task Creation**
-   - Input: New task details (title, priority, deadline, tags)
-   - Expected Output: New task appears in the task list
-   - Test Steps:
-     1. Click the '+' button to open the 'Add New Task' form
-     2. Fill in task details
-     3. Click 'Add Task'
-     4. Verify the new task appears in the list
+   - Action: Click '+' button, enter "Complete project report" as title, select "High" priority, set deadline to tomorrow, add tag "Work"
+   - Expected Result: New task "Complete project report" appears in the task list with high priority, tomorrow's date, and "Work" tag
 
 2. **Task Editing**
-   - Input: Updated task details
-   - Expected Output: Task details are updated in the list
-   - Test Steps:
-     1. Click the edit icon on an existing task
-     2. Modify task details
-     3. Click the save icon
-     4. Verify the task details are updated in the list
+   - Action: Click edit icon on "Complete project report" task, change title to "Finish project report", change priority to "Medium", add tag "Urgent"
+   - Expected Result: Task updates in the list with new title "Finish project report", medium priority, and both "Work" and "Urgent" tags
 
-3. **Task Deletion**
-   - Input: Task to be deleted
-   - Expected Output: Task is removed from the list
-   - Test Steps:
-     1. Click the delete icon on an existing task
-     2. Confirm deletion in the prompt
-     3. Verify the task is removed from the list
+3. **Task Duplication**
+   - Action: Click duplicate icon on "Finish project report" task
+   - Expected Result: New task appears in the list with title "Finish project report (Copy)" and all other details matching the original task
 
-4. **Task Filtering**
-   - Input: Filter criteria (e.g., completed tasks, specific tag)
-   - Expected Output: Only tasks meeting the criteria are displayed
-   - Test Steps:
-     1. Select a filter option or click on a tag
-     2. Verify only relevant tasks are displayed
+4. **Task Deletion**
+   - Action: Click delete icon on "Finish project report (Copy)" task, confirm deletion
+   - Expected Result: "Finish project report (Copy)" task is removed from the task list
 
-5. **Task Sorting**
-   - Input: Sort criteria (e.g., by title, priority, deadline)
-   - Expected Output: Tasks are sorted according to the selected criteria
-   - Test Steps:
-     1. Click on a column header to sort
-     2. Verify tasks are arranged in the correct order
+5. **Task Filtering**
+   - Action: Click on "Work" tag in the filter section
+   - Expected Result: Only tasks with the "Work" tag are displayed in the task list
+
+6. **Task Sorting**
+   - Action: Click on "Priority" column header
+   - Expected Result: Tasks are sorted by priority (High to Low)
+
+7. **Task Search**
+   - Action: Type "report" in the search bar
+   - Expected Result: Only tasks containing "report" in their title or tags are displayed
+
+8. **Tag Creation**
+   - Action: Click "Manage Tags", enter "Personal" as tag name, select color blue, click "Add Tag"
+   - Expected Result: New tag "Personal" with blue color appears in the tag list
+
+9. **Tag Editing**
+   - Action: In tag management, click edit icon on "Work" tag, change color to red
+   - Expected Result: "Work" tag color updates to red in the tag list and on all associated tasks
+
+10. **Tag Deletion**
+    - Action: In tag management, click delete icon on "Personal" tag, confirm deletion
+    - Expected Result: "Personal" tag is removed from the tag list and from all tasks that had this tag
+
+11. **Background Color Customization**
+    - Action: Use the color picker in the bottom left to select a new background color
+    - Expected Result: Application background changes to the selected color
+
+12. **"Due Soon" Indicator**
+    - Action: Create a new task "Urgent meeting" with deadline set to 2 days from now
+    - Expected Result: "Urgent meeting" task appears in the list with a "Due Soon" indicator
 
 ### Backend Tests
 
-1. **GET /api/tasks**
-   - Input: GET request to /api/tasks
-   - Expected Output: JSON array of all tasks
-   - Test: Use curl or Postman to send a GET request and verify the response
+1. `GET /api/tasks`
+   - Action: Send GET request to /api/tasks
+   - Expected Result: JSON array of all tasks is returned
 
-2. **POST /api/tasks**
-   - Input: POST request with new task data
-   - Expected Output: JSON object with the new task's ID
-   - Test: Use curl or Postman to send a POST request with task data and verify the response
+2. `POST /api/tasks`
+   - Action: Send POST request to /api/tasks with new task data including tags
+   - Expected Result: JSON object with the new task's ID is returned
 
-3. **PUT /api/tasks/:id**
-   - Input: PUT request with updated task data
-   - Expected Output: JSON object confirming the number of changes
-   - Test: Use curl or Postman to send a PUT request with updated task data and verify the response
+3. `PUT /api/tasks/:id`
+   - Action: Send PUT request to /api/tasks/:id with updated task data including modified tags
+   - Expected Result: JSON object confirming the number of changes is returned
 
-4. **DELETE /api/tasks/:id**
-   - Input: DELETE request with task ID
-   - Expected Output: JSON object confirming the number of changes
-   - Test: Use curl or Postman to send a DELETE request with a task ID and verify the response
+4. `DELETE /api/tasks/:id`
+   - Action: Send DELETE request to /api/tasks/:id
+   - Expected Result: JSON object confirming the number of changes is returned
+
+5. `GET /api/tags`
+   - Action: Send GET request to /api/tags
+   - Expected Result: JSON array of all tags is returned
+
+6. `POST /api/tags`
+   - Action: Send POST request to /api/tags with new tag data
+   - Expected Result: JSON object with the new tag's ID, name, and color is returned
+
+7. `PUT /api/tags/:id`
+   - Action: Send PUT request to /api/tags/:id with updated tag data
+   - Expected Result: JSON object confirming the number of changes is returned
+
+8. `DELETE /api/tags/:id`
+   - Action: Send DELETE request to /api/tags/:id
+   - Expected Result: JSON object confirming the number of changes is returned
 
 ### Integration Tests
 
 1. **End-to-End Task Management**
-   - Test the full lifecycle of a task from creation to deletion
-   - Verify that frontend actions correctly interact with the backend API
+   - Action: 
+     1. Create a task "Buy groceries" with "Shopping" tag
+     2. Edit it to add "Urgent" tag
+     3. Mark as complete
+     4. Duplicate the task
+     5. Delete the original task
+   - Expected Result: 
+     1. Task is created with correct details
+     2. Task is updated with new tag
+     3. Task is marked as complete
+     4. A duplicate task appears with all details of the original
+     5. Original task is removed from the list, duplicate remains
 
 2. **Data Persistence**
-   - Create multiple tasks, refresh the page, and verify all tasks are still present
-   - Test that task updates persist after page reloads
+   - Action: Create multiple tasks with various tags, refresh the page
+   - Expected Result: All previously created tasks and tags are still present and correctly displayed
 
-These test cases cover the core functionalities of the Personal Task Manager. They ensure that the application behaves correctly for various user interactions and API operations.
+3. **Tag Management Impact**
+   - Action: 
+     1. Create two tasks with a "Work" tag
+     2. Edit the "Work" tag to change its color
+     3. Delete the "Work" tag
+   - Expected Result: 
+     1. Both tasks show the "Work" tag
+     2. The color change is reflected on both tasks
+     3. The "Work" tag is removed from both tasks
+
+These test cases cover the core functionalities of the Personal Task Manager, including task and tag operations, filtering, sorting, searching, and UI customization. They ensure that the application behaves correctly for various user interactions and API operations.

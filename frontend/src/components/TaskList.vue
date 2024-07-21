@@ -118,9 +118,12 @@
       </div>
     </div>
 
-    <!-- Task List Header -->
-    <!-- Displays column headers for the task list and allows sorting -->
-    <div class="grid grid-cols-custom gap-4 font-bold mb-2">
+    <!-- Task List -->
+    <!-- Displays the list of tasks with transition effects -->
+    <transition-group name="list" tag="ul" class="bg-white shadow-lg rounded-lg divide-y divide-gray-200">
+
+    <!-- Column headers (visible only on desktop) -->
+    <li v-if="!isMobileView" class="hidden lg:grid grid-cols-custom gap-4 font-bold p-4">
       <div class="text-left cursor-pointer" @click="toggleSort('title')">
         Title
         <span class="ml-1">{{ getSortIcon('title') }}</span>
@@ -135,69 +138,82 @@
       </div>
       <div class="text-center">Tags</div>
       <div class="text-right">Actions</div>
-    </div>
+    </li>
 
-    <!-- Task List -->
-    <!-- Displays the list of tasks with transition effects -->
-    <transition-group name="list" tag="ul" class="bg-white shadow-lg rounded-lg divide-y divide-gray-200">
+    <!-- Each task item -->
+    <li v-for="task in filteredAndSortedTasks" :key="task.id" 
+      :class="{
+        'bg-blue-50 border-2 border-blue-300': task.isEditing,
+        'hover:bg-gray-100': !task.isEditing && !task.completed,
+        'bg-gray-100': task.completed
+      }" 
+      class="p-4 transition duration-150 ease-in-out rounded">
 
-      <!-- Each task item -->
-      <li v-for="task in filteredAndSortedTasks" :key="task.id" 
-        :class="{
-          'bg-blue-50 border-2 border-blue-300': task.isEditing,
-          'hover:bg-gray-100': !task.isEditing && !task.completed,
-          'bg-gray-100': task.completed
-        }" 
-        class="p-4 transition duration-150 ease-in-out rounded">
-
-        <!-- Task item content -->
-        <div class="grid grid-cols-custom gap-4 items-center">
-
-          <!-- Task title and completion checkbox -->
-          <div class="col-span-1 flex items-center">
+      <!-- Mobile view -->
+      <div v-if="isMobileView">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center flex-grow mr-2">
             <input type="checkbox" :checked="task.completed" @change="toggleTaskCompletion(task)"
-              class="mr-3 form-checkbox h-5 w-5 text-blue-600 transition duration-150 ease-in-out" />
-            <span v-if="!task.isEditing" 
-              :class="{ 'line-through text-gray-500': task.completed,
-                'text-gray-900': !task.completed
-              }"
-              class="flex-grow text-left">
+              class="mr-3 form-checkbox h-5 w-5 text-blue-600 transition duration-150 ease-in-out flex-shrink-0" />
+            <span :class="{ 'line-through text-gray-500': task.completed, 'text-gray-900': !task.completed }"
+              class="truncate">
               {{ task.title }}
-              <span v-if="isDueSoon(task.deadline)"
-                class="ml-2 bg-red-200 text-red-800 rounded-full text-xs inline-flex items-center justify-center w-6 h-6 sm:w-auto sm:h-auto sm:px-2 sm:py-1">
-                <span class="hidden sm:inline">Due Soon</span>
-                <span class="sm:hidden">!</span>
-              </span>
             </span>
-            <input v-else v-model="task.editTitle" class="border p-1 mr-2 flex-grow rounded" />
           </div>
+          <div class="flex items-center flex-shrink-0">
+            <span class="text-sm mr-2">{{ formatShortDate(task.deadline) }}</span>
+            <button v-if="!task.isEditing" @click="toggleDetails(task)" class="text-blue-500 hover:text-blue-700">
+              <font-awesome-icon :icon="['fas', 'ellipsis-v']" />
+            </button>
+          </div>
+        </div>
 
-          <!-- Task priority -->
-          <div class="col-span-1 text-center">
-            <span v-if="!task.isEditing">{{ getPriorityEmoji(task.priority) }}</span>
-            <select v-else v-model="task.editPriority" class="border p-1 rounded">
+        <!-- Mobile detail/edit view -->
+        <div v-if="task.showDetails || task.isEditing" class="mt-4">
+          <div v-if="!task.isEditing" class="grid grid-cols-1 gap-2 text-left">
+            <div><strong class="mr-2">Priority:</strong>{{ getPriorityEmoji(task.priority) }}</div>
+            <div>
+              <strong class="mr-2">Deadline:</strong>{{ formatDate(task.deadline) }}
+              <span v-if="isDueSoon(task.deadline)"
+                class="ml-2 bg-red-200 text-red-800 rounded-full text-xs px-2 py-1">
+                Due&nbsp;Soon
+              </span>
+            </div>
+            <div>
+              <strong class="mr-2 block mb-1">Tags:</strong>
+              <div class="flex flex-wrap">
+                <span v-for="tagName in task.tags" :key="tagName"
+                  :style="{ backgroundColor: tags.find(t => t.name === tagName)?.color || '#cccccc', color: getTextColor(tags.find(t => t.name === tagName)?.color) }"
+                  class="px-2 py-1 rounded-full text-sm mr-2 mb-2 inline-block">
+                  {{ tagName }}
+                </span>
+              </div>
+            </div>
+            <div class="flex justify-end mt-2">
+              <button @click="editTask(task)" :disabled="task.completed"
+                :class="{ 'opacity-50 cursor-not-allowed': task.completed }"
+                class="text-gray-500 hover:text-blue-700 mr-2 transition duration-150 ease-in-out">
+                <font-awesome-icon :icon="['fas', 'pen']" />
+              </button>
+              <button @click="duplicateTask(task)"
+                class="text-gray-500 hover:text-blue-700 mr-2 transition duration-150 ease-in-out">
+                <font-awesome-icon :icon="['fas', 'clone']" />
+              </button>
+              <button @click="deleteTask(task.id)"
+                class="text-gray-500 hover:text-red-700 transition duration-150 ease-in-out">
+                <font-awesome-icon :icon="['fas', 'trash']" />
+              </button>
+            </div>
+          </div>
+          <div v-else class="grid grid-cols-1 gap-2">
+            <input v-model="task.editTitle" class="border p-1 w-full rounded mb-2" placeholder="Task title" />
+            <select v-model="task.editPriority" class="border p-1 w-full rounded mb-2">
               <option value="1">Low ⚪</option>
               <option value="2">Medium 🟡</option>
               <option value="3">High 🔴</option>
             </select>
-          </div>
-
-          <!-- Task deadline -->
-          <div class="col-span-1 text-center">
-            <span v-if="!task.isEditing">{{ formatDate(task.deadline) }}</span>
-            <input v-else type="date" v-model="task.editDeadline" class="border p-1 rounded" />
-          </div>
-
-          <!-- Task tags -->
-          <div class="col-span-1">
-            <div v-if="!task.isEditing" class="flex flex-wrap">
-              <span v-for="tagName in task.tags" :key="tagName"
-                :style="{ backgroundColor: tags.find(t => t.name === tagName)?.color || '#cccccc', color: getTextColor(tags.find(t => t.name === tagName)?.color) }"
-                class="px-2 py-1 rounded-full text-sm mr-2 mb-2">
-                {{ tagName }}
-              </span>
-            </div>
-            <div v-else class="flex flex-wrap">
+            <input type="date" v-model="task.editDeadline" class="border p-1 w-full rounded mb-2" />
+            <div class="flex flex-wrap mb-2">
               <span v-for="tag in tags" :key="tag.name" @click="toggleTaskTag(task.editTags, tag.name)"
                 :style="{ backgroundColor: tag.color, color: getTextColor(tag.color) }"
                 :class="{ 'opacity-50': !task.editTags.includes(tag.name) }"
@@ -205,36 +221,98 @@
                 {{ tag.name }}
               </span>
             </div>
-          </div>
-
-          <!-- Task actions (edit, delete, duplicate) -->
-          <div class="col-span-1 flex sm:justify-end">
-            <div class="flex flex-col sm:flex-row">
-              <button v-if="!task.isEditing" @click="editTask(task)" :disabled="task.completed"
-                :class="{ 'opacity-50 cursor-not-allowed': task.completed }"
-                class="text-gray-500 hover:text-blue-700 mb-2 sm:mb-0 sm:mr-2 transition duration-150 ease-in-out">
-                <font-awesome-icon :icon="['fas', 'pen']" />
-              </button>
-              <button v-if="task.isEditing" @click="saveTaskEdit(task)"
-                class="text-green-500 hover:text-green-700 mb-2 sm:mb-0 sm:mr-2 transition duration-150 ease-in-out">
+            <div class="flex justify-end">
+              <button @click="saveTaskEdit(task)" class="text-green-500 hover:text-green-700 mr-2">
                 <font-awesome-icon :icon="['fas', 'check']" />
               </button>
-              <button v-if="task.isEditing" @click="cancelTaskEdit(task)"
-                class="text-red-500 hover:text-red-700 mb-2 sm:mb-0 sm:mr-2 transition duration-150 ease-in-out">
+              <button @click="cancelTaskEdit(task)" class="text-red-500 hover:text-red-700">
                 <font-awesome-icon :icon="['fas', 'times']" />
-              </button>
-              <button v-if="!task.isEditing" @click="duplicateTask(task)"
-                class="text-gray-500 hover:text-blue-700 mb-2 sm:mb-0 sm:mr-2 transition duration-150 ease-in-out">
-                <font-awesome-icon :icon="['fas', 'clone']" />
-              </button>
-              <button v-if="!task.isEditing" @click="deleteTask(task.id)"
-                class="text-gray-500 hover:text-red-700 transition duration-150 ease-in-out">
-                <font-awesome-icon :icon="['fas', 'trash']" />
               </button>
             </div>
           </div>
         </div>
-      </li>
+      </div>
+
+      <!-- Desktop view -->
+      <div v-else class="grid grid-cols-custom gap-4 items-center">
+        <!-- Task title and completion checkbox -->
+        <div class="col-span-1 flex items-center">
+          <input type="checkbox" :checked="task.completed" @change="toggleTaskCompletion(task)"
+            class="mr-3 form-checkbox h-5 w-5 text-blue-600 transition duration-150 ease-in-out" />
+          <span v-if="!task.isEditing" 
+            :class="{ 'line-through text-gray-500': task.completed, 'text-gray-900': !task.completed }"
+            class="flex-grow text-left">
+            {{ task.title }}
+            <span v-if="isDueSoon(task.deadline)"
+              class="ml-2 bg-red-200 text-red-800 rounded-full text-xs px-2 py-1">
+              Due&nbsp;Soon
+            </span>
+          </span>
+          <input v-else v-model="task.editTitle" class="border p-1 mr-2 flex-grow rounded" />
+        </div>
+
+        <!-- Task priority -->
+        <div class="col-span-1 text-center">
+          <span v-if="!task.isEditing">{{ getPriorityEmoji(task.priority) }}</span>
+          <select v-else v-model="task.editPriority" class="border p-1 rounded">
+            <option value="1">Low ⚪</option>
+            <option value="2">Medium 🟡</option>
+            <option value="3">High 🔴</option>
+          </select>
+        </div>
+
+        <!-- Task deadline -->
+        <div class="col-span-1 text-center">
+          <span v-if="!task.isEditing">{{ formatDate(task.deadline) }}</span>
+          <input v-else type="date" v-model="task.editDeadline" class="border p-1 rounded" />
+        </div>
+
+        <!-- Task tags -->
+        <div class="col-span-1">
+          <div v-if="!task.isEditing" class="flex flex-wrap">
+            <span v-for="tagName in task.tags" :key="tagName"
+              :style="{ backgroundColor: tags.find(t => t.name === tagName)?.color || '#cccccc', color: getTextColor(tags.find(t => t.name === tagName)?.color) }"
+              class="px-2 py-1 rounded-full text-sm mr-2 mb-2">
+              {{ tagName }}
+            </span>
+          </div>
+          <div v-else class="flex flex-wrap">
+            <span v-for="tag in tags" :key="tag.name" @click="toggleTaskTag(task.editTags, tag.name)"
+              :style="{ backgroundColor: tag.color, color: getTextColor(tag.color) }"
+              :class="{ 'opacity-50': !task.editTags.includes(tag.name) }"
+              class="px-2 py-1 rounded-full text-sm mr-2 mb-2 cursor-pointer">
+              {{ tag.name }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Task actions (edit, delete, duplicate) -->
+        <div class="col-span-1 flex justify-end">
+          <button v-if="!task.isEditing" @click="editTask(task)" :disabled="task.completed"
+            :class="{ 'opacity-50 cursor-not-allowed': task.completed }"
+            class="text-gray-500 hover:text-blue-700 mr-2 transition duration-150 ease-in-out">
+            <font-awesome-icon :icon="['fas', 'pen']" />
+          </button>
+          <button v-if="task.isEditing" @click="saveTaskEdit(task)"
+            class="text-green-500 hover:text-green-700 mr-2 transition duration-150 ease-in-out">
+            <font-awesome-icon :icon="['fas', 'check']" />
+          </button>
+          <button v-if="task.isEditing" @click="cancelTaskEdit(task)"
+            class="text-red-500 hover:text-red-700 mr-2 transition duration-150 ease-in-out">
+            <font-awesome-icon :icon="['fas', 'times']" />
+          </button>
+          <button v-if="!task.isEditing" @click="duplicateTask(task)"
+            class="text-gray-500 hover:text-blue-700 mr-2 transition duration-150 ease-in-out">
+            <font-awesome-icon :icon="['fas', 'clone']" />
+          </button>
+          <button v-if="!task.isEditing" @click="deleteTask(task.id)"
+            class="text-gray-500 hover:text-red-700 transition duration-150 ease-in-out">
+            <font-awesome-icon :icon="['fas', 'trash']" />
+          </button>
+        </div>
+      </div>
+
+    </li>
     </transition-group>
 
     <!-- Message for when no tasks are available -->
@@ -344,6 +422,12 @@ export default {
        * @type {string}
        */
       searchQuery: '',
+
+      /**
+       * Decides if mobile view is shown
+       * @type {boolean}
+       */
+      isMobileView: false,
     };
   },
   computed: {
@@ -402,6 +486,9 @@ export default {
     this.fetchTasks();
     this.fetchTags();
     document.body.style.backgroundColor = this.bgColor;
+    this.checkMobileView();
+    window.addEventListener('resize', this.checkMobileView);
+    
   },
   watch: {
     /**
@@ -429,7 +516,8 @@ export default {
           editTitle: task.title,
           editPriority: task.priority,
           editDeadline: task.deadline,
-          tags: task.tags || []
+          tags: task.tags || [],
+          showDetails: false
         }));
       } catch (error) {
         console.error('Error fetching tasks:', error);
@@ -722,12 +810,34 @@ export default {
 
     /**
      * Saves edits made to a tag
+     * @async
      * @param {Object} tag - The tag being edited
      */
-    saveTagEdit(tag) {
+    async saveTagEdit(tag) {
       if (tag.name.trim() && !this.tags.some(t => t.name === tag.name.trim() && t !== tag)) {
-        tag.name = tag.name.trim();
-        tag.isEditing = false;
+        try {
+          const response = await fetch(`/api/tags/${tag.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: tag.name.trim(), color: tag.color }),
+          });
+          if (response.ok) {
+            tag.name = tag.name.trim();
+            tag.isEditing = false;
+            this.$toast.success('Tag updated successfully', {
+              position: 'top-right',
+              duration: 3000
+            });
+          } else {
+            throw new Error('Failed to update tag');
+          }
+        } catch (error) {
+          console.error('Error updating tag:', error);
+          this.$toast.error('Failed to update tag. Please try again.', {
+            position: 'top-right',
+            duration: 3000
+          });
+        }
       } else {
         this.$toast.error('Tag name is empty or already exists', {
           position: 'top-right',
@@ -737,24 +847,30 @@ export default {
     },
 
     /**
-     * Deletes a tag
+     * Deletes a tag after confirmation
      * @async
      * @param {Object} tagToDelete - The tag to delete
      */
     async deleteTag(tagToDelete) {
-      try {
-        await fetch(`/api/tags/${tagToDelete.id}`, { method: 'DELETE' });
-        this.tags = this.tags.filter(tag => tag.id !== tagToDelete.id);
-        this.tasks.forEach(task => {
-          task.tags = task.tags.filter(tag => tag !== tagToDelete.name);
-          this.updateTask(task);
-        });
-      } catch (error) {
-        console.error('Error deleting tag:', error);
-        this.$toast.error('Failed to delete tag. Please try again.', {
-          position: 'top-right',
-          duration: 3000
-        });
+      if (confirm(`Are you sure you want to delete the tag "${tagToDelete.name}"? This will remove the tag from all tasks.`)) {
+        try {
+          await fetch(`/api/tags/${tagToDelete.id}`, { method: 'DELETE' });
+          this.tags = this.tags.filter(tag => tag.id !== tagToDelete.id);
+          this.tasks.forEach(task => {
+            task.tags = task.tags.filter(tag => tag !== tagToDelete.name);
+            this.updateTask(task);
+          });
+          this.$toast.success('Tag deleted successfully', {
+            position: 'top-right',
+            duration: 3000
+          });
+        } catch (error) {
+          console.error('Error deleting tag:', error);
+          this.$toast.error('Failed to delete tag. Please try again.', {
+            position: 'top-right',
+            duration: 3000
+          });
+        }
       }
     },
 
@@ -841,6 +957,33 @@ export default {
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
       return diffDays >= 0 && diffDays <= 3;
     },
+
+    /**
+     * Formats a date string into a short date format (month and day).
+     * @param {string} dateString - The date string to format.
+     * @returns {string} The formatted short date string.
+     */
+    formatShortDate(dateString) {
+      if (!dateString) return '';
+      const date = new Date(dateString);
+      return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    },
+
+    /**
+     * Toggles the details view for a task on mobile devices.
+     * @param {Object} task - The task object to toggle details for.
+     */
+    toggleDetails(task) {
+      task.showDetails = !task.showDetails;
+    },
+
+    /**
+     * Check if the current view is mobile based on screen width
+     */
+    checkMobileView() {
+      this.isMobileView = window.innerWidth < 768;
+    },
+
   },
 };
 </script>
